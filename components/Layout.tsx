@@ -32,7 +32,8 @@ import {
   ClipboardList,
   Search,
   History,
-  CheckCircle
+  CheckCircle,
+  User as UserIcon
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
@@ -60,43 +61,55 @@ const Layout: React.FC = () => {
 
   const isOperator = user?.role === UserRole.OPERATOR;
   const isApprover = user?.role === UserRole.PEJABAT_PENYETUJU;
+  const isPegawai = user?.role === UserRole.PEGAWAI;
 
-  // Final Structured Menu for Operator
+  // Menu for Operator
   const operatorMenuItems = [
     { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { to: '/sppd/baru', icon: <PlusCircle size={18} />, label: 'Buat SPPD' },
     { to: '/sppd', icon: <FileText size={18} />, label: 'Daftar SPPD' },
     { to: '/monitoring', icon: <ShieldCheck size={18} />, label: 'Monitoring' },
     { to: '/arsip-digital', icon: <Archive size={18} />, label: 'Arsip' },
+    { to: '/profile', icon: <UserIcon size={18} />, label: 'Profil Saya' },
   ];
 
-  // Final Structured Menu for Approver (Request User)
+  // Menu for Approver
   const approverMenuItems = [
     { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { to: '/sppd', icon: <CheckCircle size={18} />, label: 'Persetujuan' },
     { to: '/riwayat-persetujuan', icon: <History size={18} />, label: 'Riwayat' },
+    { to: '/profile', icon: <UserIcon size={18} />, label: 'Profil Saya' },
   ];
 
-  // Menu for Admin and Others
+  // Menu for Pegawai (Final)
+  const pegawaiMenuItems = [
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+    { to: '/sppd/baru', icon: <PlusCircle size={18} />, label: 'Ajukan SPPD' },
+    { to: '/sppd', icon: <FileText size={18} />, label: 'SPPD Saya' },
+    { to: '/profile', icon: <UserIcon size={18} />, label: 'Profil Saya' },
+  ];
+
+  // Menu for Admin
   const adminMenuItems = [
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN_INSTANSI, UserRole.PEGAWAI] },
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN_INSTANSI] },
     { to: '/institusi', icon: <Building2 size={18} />, label: 'Instansi', roles: [UserRole.SUPER_ADMIN] },
     { to: '/subscription-billing', icon: <CreditCard size={18} />, label: 'Subscription', roles: [UserRole.SUPER_ADMIN] },
     { to: '/system-monitoring', icon: <Activity size={18} />, label: 'System Vitals', roles: [UserRole.SUPER_ADMIN] },
     { to: '/institution-profile', icon: <Building size={18} />, label: 'Profil Instansi', roles: [UserRole.ADMIN_INSTANSI] },
-    { to: '/users', icon: <Users size={18} />, label: 'Pengguna', roles: [UserRole.ADMIN_INSTANSI] },
+    { to: '/users', icon: <Users size={18} />, label: 'Pengguna', roles: [UserRole.ADMIN_INSTANSI, UserRole.SUPER_ADMIN] },
     { to: '/master-data', icon: <Database size={18} />, label: 'Data Master', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/standar-biaya', icon: <WalletCards size={18} />, label: 'Standar Biaya', roles: [UserRole.ADMIN_INSTANSI] },
-    { to: '/sppd', icon: <FileText size={18} />, label: 'Kelola SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.PEGAWAI] },
+    { to: '/sppd', icon: <FileText size={18} />, label: 'Kelola SPPD', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/laporan', icon: <BarChart3 size={18} />, label: 'Laporan', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/institution-config', icon: <Sliders size={18} />, label: 'Pengaturan', roles: [UserRole.ADMIN_INSTANSI] },
+    { to: '/profile', icon: <UserIcon size={18} />, label: 'Profil Saya', roles: [UserRole.ADMIN_INSTANSI, UserRole.SUPER_ADMIN] },
   ];
 
-  const currentMenuItems = isOperator 
-    ? operatorMenuItems 
-    : isApprover 
-      ? approverMenuItems 
-      : adminMenuItems.filter(item => user && item.roles?.includes(user.role));
+  const currentMenuItems = 
+    isOperator ? operatorMenuItems :
+    isApprover ? approverMenuItems :
+    isPegawai ? pegawaiMenuItems :
+    adminMenuItems.filter(item => user && item.roles?.includes(user.role));
 
   const getSubStatusColor = () => {
     if (!subscription) return 'bg-amber-100 text-amber-800 border-amber-200';
@@ -127,7 +140,7 @@ const Layout: React.FC = () => {
         <nav className="flex-1 p-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar">
           {isSidebarOpen && (
             <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] px-4 mb-4">
-              {isApprover ? 'Menu Pimpinan' : 'Main Menu'}
+              {isApprover ? 'Menu Pimpinan' : isPegawai ? 'Menu Pegawai' : 'Main Menu'}
             </p>
           )}
           {currentMenuItems.map((item, index) => (

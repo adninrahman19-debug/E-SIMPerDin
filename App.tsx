@@ -32,6 +32,7 @@ import InstitutionConfigPage from './pages/admin/InstitutionConfigPage';
 import DigitalArchivePage from './pages/admin/DigitalArchivePage';
 import MonitoringPage from './pages/sppd/MonitoringPage';
 import ApprovalHistoryPage from './pages/sppd/ApprovalHistoryPage';
+import ProfilePage from './pages/user/ProfilePage';
 
 // Detail Pages
 import FeaturesPage from './pages/details/FeaturesPage';
@@ -69,7 +70,8 @@ const App: React.FC = () => {
       setUser(parsedUser);
       if (parsedUser.institutionId) {
         const sub = MOCK_SUBSCRIPTIONS.find(s => s.institutionId === parsedUser.institutionId);
-        setSubscription(sub || null);
+        const subStatus = sub || null;
+        setSubscription(subStatus);
       }
     }
     setLoading(false);
@@ -117,6 +119,7 @@ const App: React.FC = () => {
             <Route path="/arsip-digital" element={<DigitalArchivePage />} />
             <Route path="/monitoring" element={<MonitoringPage />} />
             <Route path="/riwayat-persetujuan" element={<ApprovalHistoryPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             
             {user?.role === UserRole.SUPER_ADMIN && (
               <>

@@ -26,18 +26,24 @@ import {
   Building,
   Database,
   BarChart3,
-  Sliders
+  Sliders,
+  Archive,
+  PlusCircle,
+  ClipboardList,
+  Search,
+  History,
+  CheckCircle
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
   <Link 
     to={to} 
-    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-      active ? 'bg-blue-800 text-white shadow-md' : 'text-blue-100 hover:bg-blue-800/50'
+    className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+      active ? 'bg-blue-800 text-white shadow-lg' : 'text-blue-100 hover:bg-blue-800/50'
     }`}
   >
     {icon}
-    <span className="font-medium text-sm leading-none">{label}</span>
+    <span className="font-bold text-sm leading-none">{label}</span>
   </Link>
 );
 
@@ -52,36 +58,45 @@ const Layout: React.FC = () => {
     navigate('/login');
   };
 
-  // Structured Menu Items strictly following the 10 final requirements for Admin Instansi
-  const menuItems = [
-    // --- Dashboard ---
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', roles: Object.values(UserRole) },
-    
-    // --- Super Admin Specific (Internal Platform Management) ---
-    { to: '/institusi', icon: <Building2 size={18} />, label: 'Instansi', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/users-global', icon: <Users size={18} />, label: 'User Global', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/subscription-billing', icon: <CreditCard size={18} />, label: 'Subscription & Pembayaran', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/system-monitoring', icon: <Activity size={18} />, label: 'Monitoring', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/system-settings', icon: <Settings size={18} />, label: 'Platform Settings', roles: [UserRole.SUPER_ADMIN] },
+  const isOperator = user?.role === UserRole.OPERATOR;
+  const isApprover = user?.role === UserRole.PEJABAT_PENYETUJU;
 
-    // --- ADMIN INSTANSI FINAL MENU (Requested 10 Items Logic) ---
-    // 2. Profil Instansi
+  // Final Structured Menu for Operator
+  const operatorMenuItems = [
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+    { to: '/sppd/baru', icon: <PlusCircle size={18} />, label: 'Buat SPPD' },
+    { to: '/sppd', icon: <FileText size={18} />, label: 'Daftar SPPD' },
+    { to: '/monitoring', icon: <ShieldCheck size={18} />, label: 'Monitoring' },
+    { to: '/arsip-digital', icon: <Archive size={18} />, label: 'Arsip' },
+  ];
+
+  // Final Structured Menu for Approver (Request User)
+  const approverMenuItems = [
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+    { to: '/sppd', icon: <CheckCircle size={18} />, label: 'Persetujuan' },
+    { to: '/riwayat-persetujuan', icon: <History size={18} />, label: 'Riwayat' },
+  ];
+
+  // Menu for Admin and Others
+  const adminMenuItems = [
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN_INSTANSI, UserRole.PEGAWAI] },
+    { to: '/institusi', icon: <Building2 size={18} />, label: 'Instansi', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/subscription-billing', icon: <CreditCard size={18} />, label: 'Subscription', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/system-monitoring', icon: <Activity size={18} />, label: 'System Vitals', roles: [UserRole.SUPER_ADMIN] },
     { to: '/institution-profile', icon: <Building size={18} />, label: 'Profil Instansi', roles: [UserRole.ADMIN_INSTANSI] },
-    // 3. Pengguna
     { to: '/users', icon: <Users size={18} />, label: 'Pengguna', roles: [UserRole.ADMIN_INSTANSI] },
-    // 4. Data Master
     { to: '/master-data', icon: <Database size={18} />, label: 'Data Master', roles: [UserRole.ADMIN_INSTANSI] },
-    // 5. Standar Biaya
     { to: '/standar-biaya', icon: <WalletCards size={18} />, label: 'Standar Biaya', roles: [UserRole.ADMIN_INSTANSI] },
-    // 6. SPPD
-    { to: '/sppd', icon: <FileText size={18} />, label: 'SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.OPERATOR, UserRole.PEJABAT_PENYETUJU, UserRole.PEGAWAI] },
-    // 7. Laporan
+    { to: '/sppd', icon: <FileText size={18} />, label: 'Kelola SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.PEGAWAI] },
     { to: '/laporan', icon: <BarChart3 size={18} />, label: 'Laporan', roles: [UserRole.ADMIN_INSTANSI] },
-    // 8. Subscription
-    { to: '/langganan', icon: <CreditCard size={18} />, label: 'Subscription', roles: [UserRole.ADMIN_INSTANSI] },
-    // 9. Pengaturan
     { to: '/institution-config', icon: <Sliders size={18} />, label: 'Pengaturan', roles: [UserRole.ADMIN_INSTANSI] },
   ];
+
+  const currentMenuItems = isOperator 
+    ? operatorMenuItems 
+    : isApprover 
+      ? approverMenuItems 
+      : adminMenuItems.filter(item => user && item.roles?.includes(user.role));
 
   const getSubStatusColor = () => {
     if (!subscription) return 'bg-amber-100 text-amber-800 border-amber-200';
@@ -100,9 +115,9 @@ const Layout: React.FC = () => {
       >
         <div className="p-6 flex items-center justify-between border-b border-blue-800">
           {isSidebarOpen ? (
-            <Link to="/dashboard" className="text-xl font-bold tracking-tight">E-SIMPerDin</Link>
+            <Link to="/dashboard" className="text-xl font-black tracking-tighter">E-SIMPerDin</Link>
           ) : (
-            <Link to="/dashboard" className="w-8 h-8 bg-white rounded flex items-center justify-center text-blue-900 font-bold">E</Link>
+            <Link to="/dashboard" className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-blue-900 font-black">E</Link>
           )}
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-blue-200 hover:text-white lg:hidden">
             <X size={20} />
@@ -110,27 +125,29 @@ const Layout: React.FC = () => {
         </div>
 
         <nav className="flex-1 p-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar">
-          {menuItems
-            .filter(item => user && item.roles.includes(user.role))
-            .map((item, index) => (
-              <SidebarItem 
-                key={index} 
-                to={item.to} 
-                icon={item.icon} 
-                label={isSidebarOpen ? item.label : ''} 
-                active={location.pathname === item.to}
-              />
-            ))}
+          {isSidebarOpen && (
+            <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] px-4 mb-4">
+              {isApprover ? 'Menu Pimpinan' : 'Main Menu'}
+            </p>
+          )}
+          {currentMenuItems.map((item, index) => (
+            <SidebarItem 
+              key={index} 
+              to={item.to} 
+              icon={item.icon} 
+              label={isSidebarOpen ? item.label : ''} 
+              active={location.pathname === item.to}
+            />
+          ))}
         </nav>
 
-        {/* 10. Logout */}
         <div className="p-4 border-t border-blue-800">
           <button 
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3 w-full text-blue-200 hover:text-white hover:bg-red-600/20 rounded-lg transition-all"
+            className="flex items-center space-x-3 px-4 py-3 w-full text-blue-200 hover:text-white hover:bg-red-600/20 rounded-xl transition-all"
           >
             <LogOut size={18} />
-            {isSidebarOpen && <span className="font-medium text-sm">Logout</span>}
+            {isSidebarOpen && <span className="font-bold text-sm">Logout</span>}
           </button>
         </div>
       </aside>
@@ -138,7 +155,7 @@ const Layout: React.FC = () => {
       <main className="flex-1 flex flex-col overflow-hidden relative">
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-20">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-gray-500 hover:text-blue-900">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-gray-500 hover:text-blue-900 hover:bg-gray-50 rounded-xl transition-all">
               <Menu size={24} />
             </button>
             {user?.role !== UserRole.SUPER_ADMIN && (
@@ -151,16 +168,18 @@ const Layout: React.FC = () => {
           
           <div className="flex items-center space-x-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-gray-800 leading-none">{user?.name}</p>
-              <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1">{user?.role.replace('_', ' ')}</p>
+              <p className="text-sm font-black text-gray-800 leading-none">{user?.name}</p>
+              <p className="text-[10px] text-blue-600 uppercase font-black tracking-widest mt-1">
+                {user?.role === UserRole.OPERATOR ? 'Staf Administrasi' : user?.role.replace('_', ' ')}
+              </p>
             </div>
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-indigo-800 text-white rounded-full flex items-center justify-center font-bold border-2 border-white shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-indigo-800 text-white rounded-2xl flex items-center justify-center font-black border-2 border-white shadow-lg">
               {user?.name.charAt(0)}
             </div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50/50">
           <div className="max-w-7xl mx-auto">
              <Outlet />
           </div>

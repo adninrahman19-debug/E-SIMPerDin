@@ -29,6 +29,9 @@ import InstitutionProfilePage from './pages/admin/InstitutionProfilePage';
 import MasterDataPage from './pages/admin/MasterDataPage';
 import ReportsPage from './pages/admin/ReportsPage';
 import InstitutionConfigPage from './pages/admin/InstitutionConfigPage';
+import DigitalArchivePage from './pages/admin/DigitalArchivePage';
+import MonitoringPage from './pages/sppd/MonitoringPage';
+import ApprovalHistoryPage from './pages/sppd/ApprovalHistoryPage';
 
 // Detail Pages
 import FeaturesPage from './pages/details/FeaturesPage';
@@ -111,6 +114,9 @@ const App: React.FC = () => {
             <Route path="/sppd" element={<SPPDListPage />} />
             <Route path="/sppd/baru" element={<SPPDFormPage />} />
             <Route path="/sppd/edit/:id" element={<SPPDFormPage />} />
+            <Route path="/arsip-digital" element={<DigitalArchivePage />} />
+            <Route path="/monitoring" element={<MonitoringPage />} />
+            <Route path="/riwayat-persetujuan" element={<ApprovalHistoryPage />} />
             
             {user?.role === UserRole.SUPER_ADMIN && (
               <>
@@ -128,7 +134,7 @@ const App: React.FC = () => {
               </>
             )}
 
-            {user?.role === UserRole.ADMIN_INSTANSI && (
+            {(user?.role === UserRole.ADMIN_INSTANSI || user?.role === UserRole.OPERATOR) && (
               <>
                 <Route path="/institution-profile" element={<InstitutionProfilePage />} />
                 <Route path="/institution-config" element={<InstitutionConfigPage />} />

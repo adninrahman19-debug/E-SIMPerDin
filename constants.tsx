@@ -1,5 +1,5 @@
 
-import { UserRole, Institution, User, SPPDStatus, SubscriptionPlan, SubscriptionStatus, Subscription, Transaction, TransactionStatus, SPPDTemplate } from './types';
+import { UserRole, Institution, User, SPPDStatus, SubscriptionPlan, SubscriptionStatus, Subscription, Transaction, TransactionStatus, SPPDTemplate, TemplateCategory } from './types';
 
 export const MOCK_PLANS: SubscriptionPlan[] = [
   { 
@@ -44,10 +44,13 @@ export const MOCK_TEMPLATES: SPPDTemplate[] = [
   {
     id: 'tmpl-1',
     institutionId: 'GLOBAL',
+    // Added missing category and isLocked properties
+    category: TemplateCategory.SPPD,
     name: 'Format Standar Nasional',
     description: 'Template SPPD standar sesuai Peraturan Menteri Keuangan.',
     content: '<h1>SURAT PERINTAH PERJALANAN DINAS (SPPD)</h1><p>Nomor: {{NOMOR_SPPD}}</p>',
     isDefault: true,
+    isLocked: true,
     version: 1,
     isActive: true,
     createdAt: '2024-01-01'
@@ -55,10 +58,13 @@ export const MOCK_TEMPLATES: SPPDTemplate[] = [
   {
     id: 'tmpl-2',
     institutionId: 'inst-1',
+    // Added missing category and isLocked properties
+    category: TemplateCategory.SPPD,
     name: 'Template Internal Dishub',
     description: 'Format khusus dengan logo instansi dan kolom paraf tambahan.',
     content: '<h1>DISHUB - SURAT TUGAS</h1><p>Nama: {{NAMA_PEGAWAI}}</p>',
     isDefault: false,
+    isLocked: false,
     version: 2,
     isActive: true,
     createdAt: '2024-03-15'

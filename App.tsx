@@ -15,6 +15,7 @@ import PaymentVerificationPage from './pages/subscription/PaymentVerificationPag
 import MySubscriptionPage from './pages/subscription/MySubscriptionPage';
 import TemplateManagementPage from './pages/admin/TemplateManagementPage';
 import TemplateEditorPage from './pages/admin/TemplateEditorPage';
+import GlobalTemplatePage from './pages/admin/GlobalTemplatePage';
 
 // Detail Pages
 import FeaturesPage from './pages/details/FeaturesPage';
@@ -102,6 +103,7 @@ const App: React.FC = () => {
               <>
                 <Route path="/institusi" element={<InstitutionManagementPage />} />
                 <Route path="/master-paket" element={<PlanManagementPage />} />
+                <Route path="/global-templates" element={<GlobalTemplatePage />} />
                 <Route path="/verifikasi-pembayaran" element={<PaymentVerificationPage />} />
               </>
             )}

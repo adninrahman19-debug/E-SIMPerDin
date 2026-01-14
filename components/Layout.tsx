@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -15,7 +16,8 @@ import {
   CheckSquare,
   CreditCard,
   AlertCircle,
-  FileCode
+  FileCode,
+  Settings2
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
@@ -49,6 +51,7 @@ const Layout: React.FC = () => {
     // Super Admin Only
     { to: '/institusi', icon: <Building2 size={20} />, label: 'Institusi', roles: [UserRole.SUPER_ADMIN] },
     { to: '/master-paket', icon: <PackageSearch size={20} />, label: 'Master Paket', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/global-templates', icon: <Settings2 size={20} />, label: 'Template Global', roles: [UserRole.SUPER_ADMIN] },
     { to: '/verifikasi-pembayaran', icon: <CheckSquare size={20} />, label: 'Verifikasi Bayar', roles: [UserRole.SUPER_ADMIN] },
     
     // Institution Admin Only
@@ -84,7 +87,6 @@ const Layout: React.FC = () => {
         </div>
 
         <nav className="flex-1 p-4 space-y-2 mt-4 overflow-y-auto">
-          {/* Fix: Simplified filtering logic to check if user.role exists in item.roles array */}
           {menuItems.filter(item => user && item.roles.includes(user.role)).map((item) => (
             <SidebarItem 
               key={item.to} 

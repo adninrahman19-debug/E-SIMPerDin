@@ -29,6 +29,13 @@ export enum TransactionStatus {
   REJECTED = 'DITOLAK'
 }
 
+export enum TemplateCategory {
+  SPPD = 'SPPD',
+  KWITANSI = 'KWITANSI',
+  LAPORAN = 'LAPORAN',
+  SURAT_TUGAS = 'SURAT_TUGAS'
+}
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -76,12 +83,14 @@ export interface Institution {
 export interface SPPDTemplate {
   id: string;
   institutionId: string | 'GLOBAL';
+  category: TemplateCategory;
   name: string;
   description: string;
-  content: string; // HTML-like string with placeholders
+  content: string; 
   headerHtml?: string;
   footerHtml?: string;
   isDefault: boolean;
+  isLocked: boolean; // Field baru untuk Super Admin
   version: number;
   isActive: boolean;
   createdAt: string;

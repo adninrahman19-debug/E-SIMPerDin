@@ -27,6 +27,8 @@ import SupportCenterPage from './pages/admin/SupportCenterPage';
 import SubscriptionBillingPage from './pages/subscription/SubscriptionBillingPage';
 import InstitutionProfilePage from './pages/admin/InstitutionProfilePage';
 import MasterDataPage from './pages/admin/MasterDataPage';
+import ReportsPage from './pages/admin/ReportsPage';
+import InstitutionConfigPage from './pages/admin/InstitutionConfigPage';
 
 // Detail Pages
 import FeaturesPage from './pages/details/FeaturesPage';
@@ -129,7 +131,9 @@ const App: React.FC = () => {
             {user?.role === UserRole.ADMIN_INSTANSI && (
               <>
                 <Route path="/institution-profile" element={<InstitutionProfilePage />} />
+                <Route path="/institution-config" element={<InstitutionConfigPage />} />
                 <Route path="/master-data" element={<MasterDataPage />} />
+                <Route path="/laporan" element={<ReportsPage />} />
                 <Route path="/standar-biaya" element={<CostStandardsPage />} />
                 <Route path="/langganan" element={<MySubscriptionPage />} />
                 <Route path="/templates" element={<TemplateManagementPage />} />

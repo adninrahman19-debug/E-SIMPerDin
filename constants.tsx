@@ -1,5 +1,6 @@
 
 import { UserRole, Institution, User, SPPDStatus, SubscriptionPlan, SubscriptionStatus, Subscription, Transaction, TransactionStatus, SPPDTemplate, TemplateCategory, CostStandard, LogCategory, SystemLogEntry, BackupEntry, BroadcastMessage, EmailTemplate, SystemConfig, DemoSession, DemoUsageStats, SupportTicket, FAQItem, HelpDoc } from './types';
+import { RefreshCw } from 'lucide-react'; // Added missing import for general usage if needed elsewhere, though components usually import their own.
 
 export const MOCK_TICKETS: SupportTicket[] = [
   { id: 'T-101', institutionName: 'Dinas Perhubungan Prov', subject: 'Error Cetak PDF SPPD', message: 'Muncul tulisan buffer overflow saat cetak dokumen #092.', status: 'OPEN', priority: 'URGENT', createdAt: '2024-05-13T10:00:00Z', slaDeadline: '2024-05-13T14:00:00Z', category: 'TECHNICAL' },

@@ -15,6 +15,13 @@ import PaymentVerificationPage from './pages/subscription/PaymentVerificationPag
 import MySubscriptionPage from './pages/subscription/MySubscriptionPage';
 import TemplateManagementPage from './pages/admin/TemplateManagementPage';
 import TemplateEditorPage from './pages/admin/TemplateEditorPage';
+
+// Detail Pages
+import FeaturesPage from './pages/details/FeaturesPage';
+import RolesPage from './pages/details/RolesPage';
+import PricingPage from './pages/details/PricingPage';
+import SecurityPage from './pages/details/SecurityPage';
+
 import { User, UserRole, Subscription } from './types';
 import { MOCK_USERS, MOCK_SUBSCRIPTIONS } from './constants';
 
@@ -78,6 +85,11 @@ const App: React.FC = () => {
       <HashRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/fitur" element={<FeaturesPage />} />
+          <Route path="/peran" element={<RolesPage />} />
+          <Route path="/harga" element={<PricingPage />} />
+          <Route path="/keamanan" element={<SecurityPage />} />
+          
           <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
           
           <Route element={user ? <Layout /> : <Navigate to="/login" />}>
@@ -86,7 +98,6 @@ const App: React.FC = () => {
             <Route path="/sppd/baru" element={<SPPDFormPage />} />
             <Route path="/sppd/edit/:id" element={<SPPDFormPage />} />
             
-            {/* Super Admin Access */}
             {user?.role === UserRole.SUPER_ADMIN && (
               <>
                 <Route path="/institusi" element={<InstitutionManagementPage />} />
@@ -95,7 +106,6 @@ const App: React.FC = () => {
               </>
             )}
 
-            {/* Admin Instansi Access */}
             {user?.role === UserRole.ADMIN_INSTANSI && (
               <>
                 <Route path="/standar-biaya" element={<CostStandardsPage />} />
@@ -106,7 +116,6 @@ const App: React.FC = () => {
               </>
             )}
 
-            {/* Admin Instansi / Shared Access */}
             {(user?.role === UserRole.ADMIN_INSTANSI || user?.role === UserRole.SUPER_ADMIN) && (
               <Route path="/users" element={<UserManagementPage />} />
             )}

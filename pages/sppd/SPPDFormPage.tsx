@@ -4,6 +4,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { SubscriptionStatus, UserRole } from '../../types';
 import { MOCK_USERS } from '../../constants';
+import { GoogleGenAI } from "@google/genai";
 import { 
   ChevronLeft, 
   Save, 
@@ -29,7 +30,9 @@ import {
   Map,
   ClipboardList,
   ShieldCheck,
-  Lock
+  Lock,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 
 const SPPDFormPage: React.FC = () => {
@@ -53,7 +56,33 @@ const SPPDFormPage: React.FC = () => {
   });
 
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isAiDrafting, setIsAiDrafting] = useState(false);
   const isExpired = subscription?.status === SubscriptionStatus.EXPIRED;
+
+  const handleAiDraft = async () => {
+    if (!formData.purpose || formData.purpose.length < 5) {
+      alert("Harap masukkan poin-poin maksud perjalanan minimal 5 karakter agar AI dapat membantu.");
+      return;
+    }
+
+    setIsAiDrafting(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Ubahlah kalimat berikut menjadi maksud perjalanan dinas yang formal, profesional, dan sesuai tata naskah dinas pemerintah Indonesia: "${formData.purpose}". Berikan hanya satu kalimat hasil akhir tanpa penjelasan tambahan.`,
+      });
+      
+      if (response.text) {
+        setFormData(prev => ({ ...prev, purpose: response.text.trim() }));
+      }
+    } catch (error) {
+      console.error("AI Error:", error);
+      alert("Gagal menghubungi AI. Pastikan koneksi internet stabil.");
+    } finally {
+      setIsAiDrafting(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -118,7 +147,7 @@ const SPPDFormPage: React.FC = () => {
           </button>
           <div>
             <h2 className="text-3xl font-black text-gray-900 tracking-tight">{isEdit ? 'Ubah Rencana Dinas' : 'Buat Rencana Perjalanan'}</h2>
-            <p className="text-gray-500 text-sm font-medium">Pastikan data yang Anda input sesuai dengan kebutuhan penugasan.</p>
+            <p className="text-gray-500 text-sm font-medium">Lengkapi rencana Anda, AI Assistant siap membantu menyempurnakan narasi.</p>
           </div>
         </div>
       </div>
@@ -173,11 +202,22 @@ const SPPDFormPage: React.FC = () => {
 
           <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-10 space-y-10">
             <div className="space-y-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
-                  <MapPin size={20} />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                    <MapPin size={20} />
+                  </div>
+                  <h4 className="text-lg font-black text-gray-900">Maksud & Tujuan Perjalanan</h4>
                 </div>
-                <h4 className="text-lg font-black text-gray-900">Maksud & Tujuan Perjalanan</h4>
+                <button 
+                  type="button"
+                  onClick={handleAiDraft}
+                  disabled={isAiDrafting}
+                  className="flex items-center space-x-2 bg-gradient-to-r from-blue-900 to-indigo-800 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg transition-all disabled:opacity-50"
+                >
+                  {isAiDrafting ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} className="text-amber-400" />}
+                  <span>{isAiDrafting ? 'AI Sedang Berpikir...' : 'Formalisasi dg AI'}</span>
+                </button>
               </div>
 
               <div className="space-y-6">
@@ -185,8 +225,8 @@ const SPPDFormPage: React.FC = () => {
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Maksud / Keperluan</label>
                   <textarea 
                     rows={2} 
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-3xl outline-none focus:ring-2 font-medium text-gray-700 resize-none"
-                    placeholder="Contoh: Menghadiri rapat koordinasi teknis di kantor pusat..."
+                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-3xl outline-none focus:ring-2 focus:ring-blue-900/10 font-medium text-gray-700 resize-none"
+                    placeholder="Masukkan poin singkat (misal: koordinasi bappenas), lalu tekan tombol AI untuk merapikan..."
                     value={formData.purpose}
                     onChange={(e) => setFormData({...formData, purpose: e.target.value})}
                   />
@@ -298,7 +338,6 @@ const SPPDFormPage: React.FC = () => {
                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Estimasi Plafon Biaya</p>
                <h4 className="text-3xl font-black text-gray-900 tracking-tight">Rp {formData.estimatedCost.toLocaleString('id-ID')}</h4>
                
-               {/* Lock Indicator khusus Pegawai */}
                {isPegawai && (
                  <div className="mt-4 flex items-center justify-center space-x-2 py-2 px-4 bg-amber-50 rounded-xl border border-amber-100 text-amber-700 animate-in fade-in zoom-in duration-700">
                     <Lock size={12} className="shrink-0" />
@@ -318,9 +357,9 @@ const SPPDFormPage: React.FC = () => {
           <div className="p-8 bg-indigo-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
              <div className="relative z-10">
                 <ShieldCheck size={32} className="text-amber-400 mb-6" />
-                <h4 className="text-lg font-black mb-2">Integritas Data</h4>
+                <h4 className="text-lg font-black mb-2">Integritas Data AI</h4>
                 <p className="text-indigo-100 text-[10px] font-bold uppercase leading-relaxed tracking-tight opacity-80">
-                  Perubahan biaya hanya dapat dilakukan oleh Admin melalui pengaturan "Standar Biaya Masukan" global guna menjamin kepatuhan audit.
+                  Semua narasi yang dihasilkan AI telah disesuaikan dengan pola formal birokrasi Indonesia untuk meminimalisir revisi pimpinan.
                 </p>
              </div>
              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { SPPDStatus, UserRole, SPPDTemplate, TemplateCategory } from '../../types';
 import { MOCK_TEMPLATES } from '../../constants';
+import { GoogleGenAI } from "@google/genai";
 import { 
   Plus, 
   Search, 
@@ -41,7 +42,11 @@ import {
   Lock,
   ArrowUpRight,
   MapPin,
-  Plane
+  Plane,
+  Sparkles,
+  SearchCheck,
+  // Added missing RefreshCw import
+  RefreshCw
 } from 'lucide-react';
 
 const SPPDListPage: React.FC = () => {
@@ -49,10 +54,10 @@ const SPPDListPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSppdForPrint, setSelectedSppdForPrint] = useState<any | null>(null);
-  const [selectedSppdForMonitoring, setSelectedSppdForMonitoring] = useState<any | null>(null);
   const [selectedSppdForApproval, setSelectedSppdForApproval] = useState<any | null>(null);
-  const [selectedSppdForDetail, setSelectedSppdForDetail] = useState<any | null>(null); // State baru untuk Detail Pegawai
-  const [printDocType, setPrintDocType] = useState<TemplateCategory>(TemplateCategory.SPPD);
+  const [selectedSppdForDetail, setSelectedSppdForDetail] = useState<any | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [officialNote, setOfficialNote] = useState('');
 
   const isOperator = user?.role === UserRole.OPERATOR;
@@ -67,24 +72,43 @@ const SPPDListPage: React.FC = () => {
     { id: '4', num: '090/SPPD/2024/004', purpose: 'Rapat Persiapan Lebaran 2024', destination: 'Medan', date: '01-06-2024', employee: 'Andi Pratama', empId: 'u-5', unit: 'Sekretariat', cost: 5500000, status: SPPDStatus.DRAFT, attachments: 3, transportation: 'Pesawat' },
   ]);
 
-  // Filter STRICT: Pegawai HANYA bisa lihat SPPD miliknya sendiri
   const filteredSppds = mockSppds.filter(s => {
     const matchesSearch = s.num.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          s.employee.toLowerCase().includes(searchTerm.toLowerCase());
-    if (isPegawai) {
-      return s.empId === user?.id && matchesSearch;
-    }
+    if (isPegawai) return s.empId === user?.id && matchesSearch;
     return matchesSearch;
   });
+
+  const handleAiAnalysis = async (sppd: any) => {
+    setIsAiLoading(true);
+    setAiAnalysis(null);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Analisis pengajuan SPPD berikut secara ringkas untuk pimpinan: Nomor: ${sppd.num}, Pegawai: ${sppd.employee}, Tujuan: ${sppd.destination}, Maksud: ${sppd.purpose}, Biaya: Rp ${sppd.cost.toLocaleString()}. Berikan ringkasan dalam 3 poin bullet (Poin Kepatuhan, Urgensi, dan Rekomendasi). Gunakan bahasa formal.`,
+      });
+      setAiAnalysis(response.text || "Gagal menghasilkan analisis.");
+    } catch (error) {
+      setAiAnalysis("Error menghubungi AI Assistant.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedSppdForApproval) {
+      handleAiAnalysis(selectedSppdForApproval);
+    }
+  }, [selectedSppdForApproval]);
 
   const handleDecision = (status: SPPDStatus) => {
     if ((status === SPPDStatus.REVISION || status === SPPDStatus.REJECTED) && !officialNote) {
       alert('Harap masukkan catatan resmi untuk alasan penolakan atau revisi.');
       return;
     }
-    
     setMockSppds(mockSppds.map(s => s.id === selectedSppdForApproval.id ? { ...s, status: status } : s));
-    alert(`Status SPPD ${selectedSppdForApproval.num} berhasil diupdate menjadi: ${status.replace('_', ' ')}`);
+    alert(`Status SPPD ${selectedSppdForApproval.num} berhasil diperbarui.`);
     setSelectedSppdForApproval(null);
     setOfficialNote('');
   };
@@ -143,8 +167,7 @@ const SPPDListPage: React.FC = () => {
                 <th className="px-8 py-5">Dokumen</th>
                 {!isPegawai && <th className="px-6 py-5">Pegawai</th>}
                 <th className="px-6 py-5">Maksud & Tujuan</th>
-                <th className="px-6 py-5">Biaya (SBM)</th>
-                <th className="px-6 py-5">Status</th>
+                <th className="px-6 py-5 text-right">Status</th>
                 <th className="px-8 py-5 text-right">Aksi</th>
               </tr>
             </thead>
@@ -157,7 +180,7 @@ const SPPDListPage: React.FC = () => {
                          {sppd.id.padStart(3, '0')}
                        </div>
                        <div>
-                          <p className="font-mono text-xs font-black text-blue-900 leading-tight">{sppd.num}</p>
+                          <p className="font-mono text-xs font-black text-blue-900 leading-none">{sppd.num}</p>
                           <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">{sppd.date}</p>
                        </div>
                     </div>
@@ -172,13 +195,9 @@ const SPPDListPage: React.FC = () => {
                     <p className="text-xs font-black text-gray-700 line-clamp-1">{sppd.purpose}</p>
                     <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">{sppd.destination}</p>
                   </td>
-                  <td className="px-6 py-6">
-                    <p className="text-xs font-black text-gray-900">Rp {sppd.cost.toLocaleString('id-ID')}</p>
-                  </td>
-                  <td className="px-6 py-6">{getStatusBadge(sppd.status)}</td>
+                  <td className="px-6 py-6 text-right">{getStatusBadge(sppd.status)}</td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      {/* Pegawai Action: Lihat Detail */}
                       <button 
                         onClick={() => setSelectedSppdForDetail(sppd)}
                         className="p-2 text-gray-400 hover:text-blue-900 hover:bg-white rounded-xl transition-all shadow-sm" 
@@ -190,28 +209,20 @@ const SPPDListPage: React.FC = () => {
                       {isApprover && sppd.status === SPPDStatus.PENDING && (
                         <button 
                           onClick={() => setSelectedSppdForApproval(sppd)}
-                          className="bg-amber-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg flex items-center space-x-2"
+                          className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-lg transition-all flex items-center space-x-2"
                         >
-                           <FileCheck size={14} />
-                           <span>Otorisasi</span>
+                           <Sparkles size={14} className="text-amber-400" />
+                           <span>Tinjau & Otorisasi</span>
                         </button>
                       )}
                       
                       {sppd.status === SPPDStatus.APPROVED && (
-                        <>
-                          <button 
-                            onClick={() => setSelectedSppdForPrint(sppd)}
-                            className="p-2 text-blue-900 bg-blue-50 border border-blue-100 hover:bg-blue-900 hover:text-white rounded-xl transition-all shadow-sm" title="Cetak SPPD"
-                          >
-                            <Printer size={18} />
-                          </button>
-                          <button 
-                            className="p-2 text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-700 hover:text-white rounded-xl transition-all shadow-sm" title="Download Dokumen"
-                            onClick={() => alert(`Mengunduh berkas SPPD ${sppd.num}...`)}
-                          >
-                            <Download size={18} />
-                          </button>
-                        </>
+                        <button 
+                          onClick={() => setSelectedSppdForPrint(sppd)}
+                          className="p-2 text-blue-900 bg-blue-50 border border-blue-100 hover:bg-blue-900 hover:text-white rounded-xl transition-all shadow-sm" title="Cetak SPPD"
+                        >
+                          <Printer size={18} />
+                        </button>
                       )}
 
                       {(sppd.status === SPPDStatus.DRAFT || sppd.status === SPPDStatus.REVISION) && (
@@ -234,6 +245,105 @@ const SPPDListPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* MODAL APPROVAL DG AI SUMMARY */}
+      {selectedSppdForApproval && (
+        <div className="fixed inset-0 bg-blue-900/60 backdrop-blur-md flex items-center justify-center z-[70] p-4">
+           <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
+              <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+                 <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-900 text-white rounded-2xl flex items-center justify-center"><FileCheck size={24} /></div>
+                    <div>
+                       <h4 className="text-2xl font-black text-gray-900">Otorisasi Dokumen</h4>
+                       <p className="text-xs text-gray-400 font-bold uppercase">No: {selectedSppdForApproval.num}</p>
+                    </div>
+                 </div>
+                 <button onClick={() => setSelectedSppdForApproval(null)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400"><X size={24} /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-10">
+                 {/* AI Analysis Section */}
+                 <div className="bg-gradient-to-br from-blue-900 to-indigo-900 text-white p-8 rounded-[2.5rem] relative overflow-hidden shadow-xl">
+                    <div className="relative z-10">
+                       <div className="flex items-center space-x-2 mb-4">
+                          <Sparkles size={18} className="text-amber-400" />
+                          <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200">Analisis Kepatuhan AI</h5>
+                       </div>
+                       {isAiLoading ? (
+                          <div className="flex items-center space-x-3 py-6">
+                             <RefreshCw size={24} className="animate-spin text-blue-400" />
+                             <p className="text-sm font-bold animate-pulse">Meninjau dokumen...</p>
+                          </div>
+                       ) : (
+                          <div className="text-sm font-medium leading-relaxed prose prose-invert max-w-none">
+                             {aiAnalysis?.split('\n').map((line, i) => <p key={i} className="mb-2">{line}</p>)}
+                          </div>
+                       )}
+                    </div>
+                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="space-y-4">
+                       <h5 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center"><SearchCheck size={16} className="mr-2" /> Detail Pengajuan</h5>
+                       <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 space-y-4">
+                          <div>
+                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pelaksana</p>
+                             <p className="text-sm font-black text-gray-900">{selectedSppdForApproval.employee}</p>
+                          </div>
+                          <div>
+                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Maksud Perjalanan</p>
+                             <p className="text-sm font-bold text-gray-700 leading-relaxed italic">"{selectedSppdForApproval.purpose}"</p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                             <div>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Kota Tujuan</p>
+                                <p className="text-sm font-black text-gray-900">{selectedSppdForApproval.destination}</p>
+                             </div>
+                             <div>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Biaya (SBM)</p>
+                                <p className="text-sm font-black text-blue-900">Rp {selectedSppdForApproval.cost.toLocaleString()}</p>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                    <div className="space-y-4">
+                       <h5 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center"><MessageSquare size={16} className="mr-2" /> Catatan Penyetuju</h5>
+                       <textarea 
+                          className="w-full h-[180px] p-6 bg-gray-50 border border-gray-200 rounded-[2rem] outline-none focus:ring-2 focus:ring-blue-900/10 font-medium text-sm resize-none"
+                          placeholder="Tambahkan catatan khusus atau alasan revisi di sini..."
+                          value={officialNote}
+                          onChange={(e) => setOfficialNote(e.target.value)}
+                       />
+                    </div>
+                 </div>
+              </div>
+
+              <div className="p-8 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                 <button 
+                  onClick={() => handleDecision(SPPDStatus.REJECTED)}
+                  className="px-6 py-3 text-red-600 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all flex items-center space-x-2"
+                 >
+                    <Ban size={16} /> <span>Tolak Permanen</span>
+                 </button>
+                 <div className="flex space-x-3">
+                    <button 
+                      onClick={() => handleDecision(SPPDStatus.REVISION)}
+                      className="px-8 py-3 bg-white border border-blue-200 text-blue-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-50 transition-all shadow-sm flex items-center space-x-2"
+                    >
+                       <RotateCcw size={16} /> <span>Kembalikan/Revisi</span>
+                    </button>
+                    <button 
+                      onClick={() => handleDecision(SPPDStatus.APPROVED)}
+                      className="px-10 py-3 bg-blue-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-800 transition-all shadow-xl shadow-blue-900/30 flex items-center space-x-2"
+                    >
+                       <CheckCircle size={16} /> <span>Setujui & TTD Digital</span>
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
 
       {/* MODAL DETAIL SPPD (KHUSUS PEGAWAI) */}
       {selectedSppdForDetail && (
@@ -269,7 +379,6 @@ const SPPDListPage: React.FC = () => {
                          <Wallet size={12} className="mr-1.5" /> Estimasi Biaya (SBM)
                        </p>
                        <p className="text-xl font-black text-blue-900">Rp {selectedSppdForDetail.cost.toLocaleString('id-ID')}</p>
-                       <p className="text-[8px] font-bold text-blue-400 uppercase mt-1 italic">* Terkunci sesuai regulasi</p>
                     </div>
                  </div>
 
@@ -281,69 +390,13 @@ const SPPDListPage: React.FC = () => {
                        "{selectedSppdForDetail.purpose}"
                     </div>
                  </div>
-
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                       <h5 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center">
-                        <Plane size={14} className="mr-2" /> Informasi Lainnya
-                       </h5>
-                       <div className="space-y-3">
-                          <div className="flex justify-between items-center py-2 border-b border-gray-50 text-sm font-bold">
-                             <span className="text-gray-400 uppercase text-[10px]">Alat Angkut</span>
-                             <span className="text-gray-900">{selectedSppdForDetail.transportation}</span>
-                          </div>
-                          <div className="flex justify-between items-center py-2 border-b border-gray-50 text-sm font-bold">
-                             <span className="text-gray-400 uppercase text-[10px]">Pelaksana</span>
-                             <span className="text-gray-900">{selectedSppdForDetail.employee}</span>
-                          </div>
-                          <div className="flex justify-between items-center py-2 border-b border-gray-50 text-sm font-bold">
-                             <span className="text-gray-400 uppercase text-[10px]">Unit Kerja</span>
-                             <span className="text-gray-900">{selectedSppdForDetail.unit}</span>
-                          </div>
-                       </div>
-                    </div>
-                    <div className="space-y-4">
-                       <h5 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center">
-                        <History size={14} className="mr-2" /> Histori Persetujuan
-                       </h5>
-                       <div className="space-y-4 relative pl-4 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-100">
-                          <div className="flex items-center space-x-3">
-                             <div className="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50"></div>
-                             <div className="text-[10px] font-bold">
-                                <p className="text-gray-900 uppercase">Input Draft</p>
-                                <p className="text-gray-400 uppercase tracking-tighter">Oleh: Pegawai • 12 Mei</p>
-                             </div>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                             <div className={`w-2 h-2 rounded-full ${selectedSppdForDetail.status === SPPDStatus.APPROVED ? 'bg-emerald-500 ring-4 ring-emerald-50' : 'bg-amber-400 ring-4 ring-amber-50'}`}></div>
-                             <div className="text-[10px] font-bold">
-                                <p className="text-gray-900 uppercase">Verifikasi Keuangan</p>
-                                <p className="text-gray-400 uppercase tracking-tighter">Status: {selectedSppdForDetail.status === SPPDStatus.APPROVED ? 'SELESAI' : 'MENUNGGU'}</p>
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
               </div>
 
               <div className="p-8 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                  <div className="flex items-center text-xs font-bold text-gray-400">
                     <ShieldCheck size={16} className="mr-2 text-blue-900" /> Dokumen divalidasi oleh sistem
                  </div>
-                 <div className="flex space-x-3">
-                    {selectedSppdForDetail.status === SPPDStatus.APPROVED ? (
-                       <>
-                          <button className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-50 flex items-center space-x-2">
-                             <Printer size={14} /> <span>Cetak</span>
-                          </button>
-                          <button className="px-8 py-3 bg-blue-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-800 shadow-xl flex items-center space-x-2">
-                             <Download size={14} /> <span>Download PDF</span>
-                          </button>
-                       </>
-                    ) : (
-                       <button onClick={() => setSelectedSppdForDetail(null)} className="px-10 py-3 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all">Tutup Detail</button>
-                    )}
-                 </div>
+                 <button onClick={() => setSelectedSppdForDetail(null)} className="px-10 py-3 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all">Tutup Detail</button>
               </div>
            </div>
         </div>

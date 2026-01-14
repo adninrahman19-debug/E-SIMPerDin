@@ -1,5 +1,7 @@
 {
   "name": "E-SIMPerDin",
   "description": "Electronic Sistem Informasi Manajemen Perjalanan Dinas - A professional, secure, and multi-tenant Indonesian government official travel management system.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

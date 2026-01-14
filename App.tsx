@@ -21,6 +21,10 @@ import SystemMonitoringPage from './pages/admin/SystemMonitoringPage';
 import SecurityControlPage from './pages/admin/SecurityControlPage';
 import BackupMaintenancePage from './pages/admin/BackupMaintenancePage';
 import CommunicationPage from './pages/admin/CommunicationPage';
+import SystemSettingsPage from './pages/admin/SystemSettingsPage';
+import DemoManagementPage from './pages/admin/DemoManagementPage';
+import SupportCenterPage from './pages/admin/SupportCenterPage';
+import SubscriptionBillingPage from './pages/subscription/SubscriptionBillingPage';
 
 // Detail Pages
 import FeaturesPage from './pages/details/FeaturesPage';
@@ -107,14 +111,16 @@ const App: React.FC = () => {
             {user?.role === UserRole.SUPER_ADMIN && (
               <>
                 <Route path="/institusi" element={<InstitutionManagementPage />} />
-                <Route path="/master-paket" element={<PlanManagementPage />} />
+                <Route path="/subscription-billing" element={<SubscriptionBillingPage />} />
                 <Route path="/global-templates" element={<GlobalTemplatePage />} />
                 <Route path="/global-cost-standards" element={<GlobalCostStandardsPage />} />
-                <Route path="/verifikasi-pembayaran" element={<PaymentVerificationPage />} />
                 <Route path="/system-monitoring" element={<SystemMonitoringPage />} />
                 <Route path="/security-control" element={<SecurityControlPage />} />
                 <Route path="/backup-maintenance" element={<BackupMaintenancePage />} />
                 <Route path="/communications" element={<CommunicationPage />} />
+                <Route path="/system-settings" element={<SystemSettingsPage />} />
+                <Route path="/demo-center" element={<DemoManagementPage />} />
+                <Route path="/support-center" element={<SupportCenterPage />} />
               </>
             )}
 

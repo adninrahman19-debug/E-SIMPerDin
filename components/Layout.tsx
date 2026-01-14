@@ -22,7 +22,10 @@ import {
   Activity,
   ShieldCheck,
   DatabaseBackup,
-  Megaphone
+  Megaphone,
+  Settings,
+  Zap,
+  LifeBuoy
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
@@ -48,23 +51,28 @@ const Layout: React.FC = () => {
     navigate('/login');
   };
 
+  // Re-structured Menu Items for Super Admin and others
   const menuItems = [
+    // Common / Role based
     { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', roles: Object.values(UserRole) },
-    { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.OPERATOR, UserRole.PEJABAT_PENYETUJU, UserRole.PEGAWAI] },
-    { to: '/users', icon: <Users size={18} />, label: 'Manajemen Pengguna', roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN_INSTANSI] },
     
-    // Super Admin Only
-    { to: '/institusi', icon: <Building2 size={18} />, label: 'Institusi', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/master-paket', icon: <PackageSearch size={18} />, label: 'Master Paket', roles: [UserRole.SUPER_ADMIN] },
+    // Super Admin Final Structure
+    { to: '/institusi', icon: <Building2 size={18} />, label: 'Instansi', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/users', icon: <Users size={18} />, label: 'User Global', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/subscription-billing', icon: <CreditCard size={18} />, label: 'Subscription & Pembayaran', roles: [UserRole.SUPER_ADMIN] },
     { to: '/global-templates', icon: <Settings2 size={18} />, label: 'Template Global', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/global-cost-standards', icon: <Globe size={18} />, label: 'Standar Biaya Global', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/verifikasi-pembayaran', icon: <CheckSquare size={18} />, label: 'Verifikasi Bayar', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/system-monitoring', icon: <Activity size={18} />, label: 'Monitoring & Audit', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/security-control', icon: <ShieldCheck size={18} />, label: 'Keamanan & Akses', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/global-cost-standards', icon: <Globe size={18} />, label: 'Standar Biaya', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/system-monitoring', icon: <Activity size={18} />, label: 'Monitoring & Audit Log', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/security-control', icon: <ShieldCheck size={18} />, label: 'Keamanan', roles: [UserRole.SUPER_ADMIN] },
     { to: '/backup-maintenance', icon: <DatabaseBackup size={18} />, label: 'Backup & Maintenance', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/communications', icon: <Megaphone size={18} />, label: 'Komunikasi & Notif', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/communications', icon: <Megaphone size={18} />, label: 'Notifikasi', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/system-settings', icon: <Settings size={18} />, label: 'Pengaturan Platform', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/demo-center', icon: <Zap size={18} />, label: 'Demo Mode', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/support-center', icon: <LifeBuoy size={18} />, label: 'Help & Support', roles: [UserRole.SUPER_ADMIN] },
     
-    // Institution Admin Only
+    // Institution Specific Role (Keep them separated for non-superadmin)
+    { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.OPERATOR, UserRole.PEJABAT_PENYETUJU, UserRole.PEGAWAI] },
+    { to: '/users', icon: <Users size={18} />, label: 'Manajemen Pengguna', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/standar-biaya', icon: <WalletCards size={18} />, label: 'Standar Biaya', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/templates', icon: <FileCode size={18} />, label: 'Template Dokumen', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/langganan', icon: <CreditCard size={18} />, label: 'Billing & Paket', roles: [UserRole.ADMIN_INSTANSI] },
@@ -97,9 +105,9 @@ const Layout: React.FC = () => {
         </div>
 
         <nav className="flex-1 p-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar">
-          {menuItems.filter(item => user && item.roles.includes(user.role)).map((item) => (
+          {menuItems.filter(item => user && item.roles.includes(user.role)).map((item, index) => (
             <SidebarItem 
-              key={item.to} 
+              key={index} 
               to={item.to} 
               icon={item.icon} 
               label={isSidebarOpen ? item.label : ''} 

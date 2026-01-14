@@ -43,6 +43,63 @@ export enum LogCategory {
   TECHNICAL = 'TECHNICAL'
 }
 
+export interface SupportTicket {
+  id: string;
+  institutionName: string;
+  subject: string;
+  message: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  createdAt: string;
+  slaDeadline: string;
+  category: 'BILLING' | 'TECHNICAL' | 'FEATURE_REQUEST' | 'SECURITY';
+}
+
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  isPublished: boolean;
+}
+
+export interface HelpDoc {
+  id: string;
+  title: string;
+  category: string;
+  views: number;
+  lastUpdated: string;
+  type: 'ARTICLE' | 'VIDEO';
+}
+
+export interface DemoSession {
+  id: string;
+  institutionName: string;
+  leadName: string;
+  createdAt: string;
+  expiresAt: string;
+  usageCount: number;
+  status: 'ACTIVE' | 'EXPIRED' | 'CONVERTED';
+}
+
+export interface DemoUsageStats {
+  date: string;
+  generations: number;
+  activeLogins: number;
+}
+
+export interface SystemConfig {
+  appName: string;
+  appLogoUrl: string;
+  footerText: string;
+  legalText: string;
+  version: string;
+  defaultLanguage: 'ID' | 'EN';
+  timezone: string;
+  dateFormat: string;
+  numberFormat: string;
+}
+
 export interface SystemLogEntry {
   id: string;
   timestamp: string;

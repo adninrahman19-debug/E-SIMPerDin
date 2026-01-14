@@ -1,5 +1,50 @@
 
-import { UserRole, Institution, User, SPPDStatus, SubscriptionPlan, SubscriptionStatus, Subscription, Transaction, TransactionStatus, SPPDTemplate, TemplateCategory, CostStandard, LogCategory, SystemLogEntry, BackupEntry, BroadcastMessage, EmailTemplate } from './types';
+import { UserRole, Institution, User, SPPDStatus, SubscriptionPlan, SubscriptionStatus, Subscription, Transaction, TransactionStatus, SPPDTemplate, TemplateCategory, CostStandard, LogCategory, SystemLogEntry, BackupEntry, BroadcastMessage, EmailTemplate, SystemConfig, DemoSession, DemoUsageStats, SupportTicket, FAQItem, HelpDoc } from './types';
+
+export const MOCK_TICKETS: SupportTicket[] = [
+  { id: 'T-101', institutionName: 'Dinas Perhubungan Prov', subject: 'Error Cetak PDF SPPD', message: 'Muncul tulisan buffer overflow saat cetak dokumen #092.', status: 'OPEN', priority: 'URGENT', createdAt: '2024-05-13T10:00:00Z', slaDeadline: '2024-05-13T14:00:00Z', category: 'TECHNICAL' },
+  { id: 'T-102', institutionName: 'Kemenkumham Unit X', subject: 'Pertanyaan Upgrade Paket', message: 'Ingin menambah kuota user tapi pembayaran transfer bank.', status: 'IN_PROGRESS', priority: 'MEDIUM', createdAt: '2024-05-13T09:15:00Z', slaDeadline: '2024-05-14T09:15:00Z', category: 'BILLING' },
+  { id: 'T-103', institutionName: 'Pemkot Tangerang', subject: 'Request Fitur TTD Digital', message: 'Apakah bisa integrasi dengan sistem BSRE untuk tanda tangan?', status: 'RESOLVED', priority: 'LOW', createdAt: '2024-05-12T14:30:00Z', slaDeadline: '2024-05-15T14:30:00Z', category: 'FEATURE_REQUEST' },
+];
+
+export const MOCK_FAQS: FAQItem[] = [
+  { id: 'faq-1', question: 'Bagaimana cara mengganti logo instansi?', answer: 'Masuk ke menu Pengaturan Institusi, unggah logo pada tab Branding.', category: 'Umum', isPublished: true },
+  { id: 'faq-2', question: 'Kenapa biaya harian tidak otomatis muncul?', answer: 'Pastikan Anda telah mengisi Standar Biaya Masukan (SBM) untuk kota tujuan tersebut.', category: 'SPPD', isPublished: true },
+  { id: 'faq-3', question: 'Apa bedanya paket Pro dan Enterprise?', answer: 'Paket Enterprise mendukung limitasi tak terbatas dan akses API kustom.', category: 'Billing', isPublished: true },
+];
+
+export const MOCK_HELPDOCS: HelpDoc[] = [
+  { id: 'doc-1', title: 'Panduan Awal Admin Instansi', category: 'Tutorial', views: 1240, lastUpdated: '2024-01-15', type: 'ARTICLE' },
+  { id: 'doc-2', title: 'Cara Setting Alur Approval', category: 'Konfigurasi', views: 856, lastUpdated: '2024-02-20', type: 'ARTICLE' },
+  { id: 'doc-3', title: 'Video: Tutorial Input SPPD Cepat', category: 'Video', views: 3200, lastUpdated: '2024-03-05', type: 'VIDEO' },
+];
+
+export const MOCK_DEMO_SESSIONS: DemoSession[] = [
+  { id: 'ds-1', institutionName: 'Pemkot Tangerang (Demo)', leadName: 'Bapak Rian', createdAt: '2024-05-13T08:00:00Z', expiresAt: '2024-05-14T08:00:00Z', usageCount: 12, status: 'ACTIVE' },
+  { id: 'ds-2', institutionName: 'Dinas Kesehatan Prov (Demo)', leadName: 'Ibu Sarah', createdAt: '2024-05-12T10:00:00Z', expiresAt: '2024-05-13T10:00:00Z', usageCount: 45, status: 'EXPIRED' },
+  { id: 'ds-3', institutionName: 'Kemenkumham Unit X', leadName: 'Bapak Agus', createdAt: '2024-05-10T14:00:00Z', expiresAt: '2024-05-11T14:00:00Z', usageCount: 89, status: 'CONVERTED' },
+];
+
+export const MOCK_DEMO_USAGE: DemoUsageStats[] = [
+  { date: '08 Mei', generations: 2, activeLogins: 15 },
+  { date: '09 Mei', generations: 5, activeLogins: 42 },
+  { date: '10 Mei', generations: 8, activeLogins: 102 },
+  { date: '11 Mei', generations: 3, activeLogins: 28 },
+  { date: '12 Mei', generations: 12, activeLogins: 156 },
+  { date: '13 Mei', generations: 7, activeLogins: 94 },
+];
+
+export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
+  appName: 'E-SIMPerDin',
+  appLogoUrl: '',
+  footerText: 'Portal Manajemen Perjalanan Dinas Terpadu',
+  legalText: '© 2024 Portal Manajemen Perjalanan Dinas Terpadu. Seluruh hak cipta dilindungi sesuai peraturan perundang-undangan RI.',
+  version: '2.5.2-stable',
+  defaultLanguage: 'ID',
+  timezone: 'Asia/Jakarta (WIB)',
+  dateFormat: 'DD/MM/YYYY',
+  numberFormat: 'IDR (Rp)'
+};
 
 export const MOCK_BROADCASTS: BroadcastMessage[] = [
   {

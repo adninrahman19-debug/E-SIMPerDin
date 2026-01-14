@@ -16,6 +16,53 @@ export enum SPPDStatus {
   ARCHIVED = 'DIARSIPKAN'
 }
 
+export enum SubscriptionStatus {
+  TRIAL = 'TRIAL',
+  ACTIVE = 'AKTIF',
+  EXPIRED = 'KADALUWARSA',
+  SUSPENDED = 'DITANGGUHKAN'
+}
+
+export enum TransactionStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'DISETUJUI',
+  REJECTED = 'DITOLAK'
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  userLimit: number;
+  sppdLimit: number;
+  approvalLevels: number;
+  storageGb: number;
+  features: string[];
+  durationDays: number;
+  hasCustomTemplates: boolean;
+}
+
+export interface Subscription {
+  id: string;
+  institutionId: string;
+  planId: string;
+  status: SubscriptionStatus;
+  startDate: string;
+  endDate: string;
+  trialStartedAt: string;
+}
+
+export interface Transaction {
+  id: string;
+  institutionId: string;
+  planId: string;
+  amount: number;
+  paymentProofUrl?: string;
+  status: TransactionStatus;
+  createdAt: string;
+  notes?: string;
+}
+
 export interface Institution {
   id: string;
   name: string;
@@ -23,6 +70,21 @@ export interface Institution {
   address: string;
   logoUrl?: string;
   active: boolean;
+  subscriptionId?: string;
+}
+
+export interface SPPDTemplate {
+  id: string;
+  institutionId: string | 'GLOBAL';
+  name: string;
+  description: string;
+  content: string; // HTML-like string with placeholders
+  headerHtml?: string;
+  footerHtml?: string;
+  isDefault: boolean;
+  version: number;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface User {

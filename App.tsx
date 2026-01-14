@@ -1,19 +1,26 @@
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import Dashboard from './pages/Dashboard';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/auth/LoginPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
 import Layout from './components/Layout';
-import SPPDList from './pages/SPPD/SPPDList';
-import SPPDForm from './pages/SPPD/SPPDForm';
-import UserManagement from './pages/Management/UserManagement';
-import InstitutionManagement from './pages/Management/InstitutionManagement';
-import CostStandards from './pages/Management/CostStandards';
-import { User, UserRole } from './types';
-import { MOCK_USERS } from './constants';
+import SPPDListPage from './pages/sppd/SPPDListPage';
+import SPPDFormPage from './pages/sppd/SPPDFormPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
+import InstitutionManagementPage from './pages/admin/InstitutionManagementPage';
+import CostStandardsPage from './pages/admin/CostStandardsPage';
+import PlanManagementPage from './pages/subscription/PlanManagementPage';
+import PaymentVerificationPage from './pages/subscription/PaymentVerificationPage';
+import MySubscriptionPage from './pages/subscription/MySubscriptionPage';
+import TemplateManagementPage from './pages/admin/TemplateManagementPage';
+import TemplateEditorPage from './pages/admin/TemplateEditorPage';
+import { User, UserRole, Subscription } from './types';
+import { MOCK_USERS, MOCK_SUBSCRIPTIONS } from './constants';
 
 interface AuthContextType {
   user: User | null;
+  subscription: Subscription | null;
   login: (username: string) => boolean;
   logout: () => void;
 }
@@ -28,12 +35,18 @@ export const useAuth = () => {
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('simperdin_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser: User = JSON.parse(savedUser);
+      setUser(parsedUser);
+      if (parsedUser.institutionId) {
+        const sub = MOCK_SUBSCRIPTIONS.find(s => s.institutionId === parsedUser.institutionId);
+        setSubscription(sub || null);
+      }
     }
     setLoading(false);
   }, []);
@@ -42,6 +55,10 @@ const App: React.FC = () => {
     const foundUser = MOCK_USERS.find(u => u.username === username);
     if (foundUser) {
       setUser(foundUser);
+      if (foundUser.institutionId) {
+        const sub = MOCK_SUBSCRIPTIONS.find(s => s.institutionId === foundUser.institutionId);
+        setSubscription(sub || null);
+      }
       localStorage.setItem('simperdin_user', JSON.stringify(foundUser));
       return true;
     }
@@ -50,32 +67,48 @@ const App: React.FC = () => {
 
   const logout = () => {
     setUser(null);
+    setSubscription(null);
     localStorage.removeItem('simperdin_user');
   };
 
   if (loading) return <div className="flex h-screen items-center justify-center">Memuat...</div>;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, subscription, login, logout }}>
       <HashRouter>
         <Routes>
-          <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
           
           <Route element={user ? <Layout /> : <Navigate to="/login" />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/sppd" element={<SPPDList />} />
-            <Route path="/sppd/baru" element={<SPPDForm />} />
-            <Route path="/sppd/edit/:id" element={<SPPDForm />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/sppd" element={<SPPDListPage />} />
+            <Route path="/sppd/baru" element={<SPPDFormPage />} />
+            <Route path="/sppd/edit/:id" element={<SPPDFormPage />} />
             
-            {/* Role Based Access Routes */}
+            {/* Super Admin Access */}
             {user?.role === UserRole.SUPER_ADMIN && (
-              <Route path="/institusi" element={<InstitutionManagement />} />
-            )}
-            {(user?.role === UserRole.ADMIN_INSTANSI || user?.role === UserRole.SUPER_ADMIN) && (
               <>
-                <Route path="/users" element={<UserManagement />} />
-                <Route path="/standar-biaya" element={<CostStandards />} />
+                <Route path="/institusi" element={<InstitutionManagementPage />} />
+                <Route path="/master-paket" element={<PlanManagementPage />} />
+                <Route path="/verifikasi-pembayaran" element={<PaymentVerificationPage />} />
               </>
+            )}
+
+            {/* Admin Instansi Access */}
+            {user?.role === UserRole.ADMIN_INSTANSI && (
+              <>
+                <Route path="/standar-biaya" element={<CostStandardsPage />} />
+                <Route path="/langganan" element={<MySubscriptionPage />} />
+                <Route path="/templates" element={<TemplateManagementPage />} />
+                <Route path="/templates/baru" element={<TemplateEditorPage />} />
+                <Route path="/templates/edit/:id" element={<TemplateEditorPage />} />
+              </>
+            )}
+
+            {/* Admin Instansi / Shared Access */}
+            {(user?.role === UserRole.ADMIN_INSTANSI || user?.role === UserRole.SUPER_ADMIN) && (
+              <Route path="/users" element={<UserManagementPage />} />
             )}
           </Route>
         </Routes>

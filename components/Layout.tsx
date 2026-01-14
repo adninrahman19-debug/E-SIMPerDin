@@ -17,7 +17,12 @@ import {
   CreditCard,
   AlertCircle,
   FileCode,
-  Settings2
+  Settings2,
+  Globe,
+  Activity,
+  ShieldCheck,
+  DatabaseBackup,
+  Megaphone
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
@@ -28,7 +33,7 @@ const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, 
     }`}
   >
     {icon}
-    <span className="font-medium">{label}</span>
+    <span className="font-medium text-sm leading-none">{label}</span>
   </Link>
 );
 
@@ -44,20 +49,25 @@ const Layout: React.FC = () => {
   };
 
   const menuItems = [
-    { to: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard', roles: Object.values(UserRole) },
-    { to: '/sppd', icon: <FileText size={20} />, label: 'Manajemen SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.OPERATOR, UserRole.PEJABAT_PENYETUJU, UserRole.PEGAWAI] },
-    { to: '/users', icon: <Users size={20} />, label: 'Manajemen Pengguna', roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN_INSTANSI] },
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard', roles: Object.values(UserRole) },
+    { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.OPERATOR, UserRole.PEJABAT_PENYETUJU, UserRole.PEGAWAI] },
+    { to: '/users', icon: <Users size={18} />, label: 'Manajemen Pengguna', roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN_INSTANSI] },
     
     // Super Admin Only
-    { to: '/institusi', icon: <Building2 size={20} />, label: 'Institusi', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/master-paket', icon: <PackageSearch size={20} />, label: 'Master Paket', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/global-templates', icon: <Settings2 size={20} />, label: 'Template Global', roles: [UserRole.SUPER_ADMIN] },
-    { to: '/verifikasi-pembayaran', icon: <CheckSquare size={20} />, label: 'Verifikasi Bayar', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/institusi', icon: <Building2 size={18} />, label: 'Institusi', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/master-paket', icon: <PackageSearch size={18} />, label: 'Master Paket', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/global-templates', icon: <Settings2 size={18} />, label: 'Template Global', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/global-cost-standards', icon: <Globe size={18} />, label: 'Standar Biaya Global', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/verifikasi-pembayaran', icon: <CheckSquare size={18} />, label: 'Verifikasi Bayar', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/system-monitoring', icon: <Activity size={18} />, label: 'Monitoring & Audit', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/security-control', icon: <ShieldCheck size={18} />, label: 'Keamanan & Akses', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/backup-maintenance', icon: <DatabaseBackup size={18} />, label: 'Backup & Maintenance', roles: [UserRole.SUPER_ADMIN] },
+    { to: '/communications', icon: <Megaphone size={18} />, label: 'Komunikasi & Notif', roles: [UserRole.SUPER_ADMIN] },
     
     // Institution Admin Only
-    { to: '/standar-biaya', icon: <WalletCards size={20} />, label: 'Standar Biaya', roles: [UserRole.ADMIN_INSTANSI] },
-    { to: '/templates', icon: <FileCode size={20} />, label: 'Template Dokumen', roles: [UserRole.ADMIN_INSTANSI] },
-    { to: '/langganan', icon: <CreditCard size={20} />, label: 'Billing & Paket', roles: [UserRole.ADMIN_INSTANSI] },
+    { to: '/standar-biaya', icon: <WalletCards size={18} />, label: 'Standar Biaya', roles: [UserRole.ADMIN_INSTANSI] },
+    { to: '/templates', icon: <FileCode size={18} />, label: 'Template Dokumen', roles: [UserRole.ADMIN_INSTANSI] },
+    { to: '/langganan', icon: <CreditCard size={18} />, label: 'Billing & Paket', roles: [UserRole.ADMIN_INSTANSI] },
   ];
 
   const getSubStatusColor = () => {
@@ -86,7 +96,7 @@ const Layout: React.FC = () => {
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 mt-4 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar">
           {menuItems.filter(item => user && item.roles.includes(user.role)).map((item) => (
             <SidebarItem 
               key={item.to} 
@@ -103,8 +113,8 @@ const Layout: React.FC = () => {
             onClick={handleLogout}
             className="flex items-center space-x-3 px-4 py-3 w-full text-blue-200 hover:text-white hover:bg-red-600/20 rounded-lg transition-all"
           >
-            <LogOut size={20} />
-            {isSidebarOpen && <span className="font-medium">Keluar</span>}
+            <LogOut size={18} />
+            {isSidebarOpen && <span className="font-medium text-sm">Keluar</span>}
           </button>
         </div>
       </aside>
@@ -116,7 +126,7 @@ const Layout: React.FC = () => {
               <Menu size={24} />
             </button>
             {user?.role !== UserRole.SUPER_ADMIN && (
-              <div className={`hidden md:flex items-center px-4 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wider ${getSubStatusColor()}`}>
+              <div className={`hidden md:flex items-center px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-wider ${getSubStatusColor()}`}>
                 <AlertCircle size={14} className="mr-2" />
                 Status: {subscription?.status || 'Bukan Pelanggan'}
                 {subscription?.endDate && ` (Berakhir ${subscription.endDate})`}
@@ -127,19 +137,19 @@ const Layout: React.FC = () => {
           <div className="flex items-center space-x-4">
             <Link to="/" className="text-xs font-semibold text-blue-900 hover:underline mr-4">Lihat Landing Page</Link>
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">{user?.role.replace('_', ' ')}</p>
+              <p className="text-sm font-semibold text-gray-800 leading-none">{user?.name}</p>
+              <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1">{user?.role.replace('_', ' ')}</p>
             </div>
-            <div className="w-10 h-10 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold border-2 border-blue-900/10">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-900 to-indigo-800 text-white rounded-full flex items-center justify-center font-bold border-2 border-white shadow-md">
               {user?.name.charAt(0)}
             </div>
           </div>
         </header>
 
         {subscription?.status === SubscriptionStatus.EXPIRED && user?.role !== UserRole.SUPER_ADMIN && (
-          <div className="bg-red-600 text-white px-6 py-2 text-center text-sm font-bold flex items-center justify-center animate-pulse">
-            <AlertCircle size={16} className="mr-2" />
-            Masa aktif langganan Anda telah berakhir. Harap melakukan pembayaran untuk terus menggunakan fitur E-SIMPerDin.
+          <div className="bg-red-600 text-white px-6 py-2 text-center text-xs font-black uppercase tracking-widest flex items-center justify-center animate-pulse">
+            <AlertCircle size={14} className="mr-2" />
+            Masa aktif langganan habis. Harap melakukan pembayaran.
           </div>
         )}
 

@@ -36,6 +36,54 @@ export enum TemplateCategory {
   SURAT_TUGAS = 'SURAT_TUGAS'
 }
 
+export enum LogCategory {
+  ADMIN_ACTION = 'ADMIN_ACTION',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  SECURITY = 'SECURITY',
+  TECHNICAL = 'TECHNICAL'
+}
+
+export interface SystemLogEntry {
+  id: string;
+  timestamp: string;
+  category: LogCategory;
+  userId: string;
+  userName: string;
+  action: string;
+  details: string;
+  ipAddress: string;
+  status: 'SUCCESS' | 'WARNING' | 'ERROR';
+}
+
+export interface BackupEntry {
+  id: string;
+  timestamp: string;
+  sizeMb: number;
+  type: 'AUTOMATIC' | 'MANUAL';
+  status: 'COMPLETED' | 'FAILED' | 'IN_PROGRESS';
+  createdBy: string;
+  fileName: string;
+}
+
+export interface BroadcastMessage {
+  id: string;
+  subject: string;
+  content: string;
+  target: 'ALL' | 'ACTIVE_ONLY' | 'TRIAL_ONLY' | 'SPECIFIC';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  createdAt: string;
+  sentBy: string;
+  readCount: number;
+}
+
+export interface EmailTemplate {
+  id: string;
+  type: 'ACTIVATION' | 'EXPIRED_REMINDER' | 'PASSWORD_RESET' | 'PAYMENT_CONFIRMED';
+  subject: string;
+  body: string;
+  lastUpdated: string;
+}
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -90,7 +138,7 @@ export interface SPPDTemplate {
   headerHtml?: string;
   footerHtml?: string;
   isDefault: boolean;
-  isLocked: boolean; // Field baru untuk Super Admin
+  isLocked: boolean;
   version: number;
   isActive: boolean;
   createdAt: string;

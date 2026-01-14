@@ -16,6 +16,11 @@ import MySubscriptionPage from './pages/subscription/MySubscriptionPage';
 import TemplateManagementPage from './pages/admin/TemplateManagementPage';
 import TemplateEditorPage from './pages/admin/TemplateEditorPage';
 import GlobalTemplatePage from './pages/admin/GlobalTemplatePage';
+import GlobalCostStandardsPage from './pages/admin/GlobalCostStandardsPage';
+import SystemMonitoringPage from './pages/admin/SystemMonitoringPage';
+import SecurityControlPage from './pages/admin/SecurityControlPage';
+import BackupMaintenancePage from './pages/admin/BackupMaintenancePage';
+import CommunicationPage from './pages/admin/CommunicationPage';
 
 // Detail Pages
 import FeaturesPage from './pages/details/FeaturesPage';
@@ -104,7 +109,12 @@ const App: React.FC = () => {
                 <Route path="/institusi" element={<InstitutionManagementPage />} />
                 <Route path="/master-paket" element={<PlanManagementPage />} />
                 <Route path="/global-templates" element={<GlobalTemplatePage />} />
+                <Route path="/global-cost-standards" element={<GlobalCostStandardsPage />} />
                 <Route path="/verifikasi-pembayaran" element={<PaymentVerificationPage />} />
+                <Route path="/system-monitoring" element={<SystemMonitoringPage />} />
+                <Route path="/security-control" element={<SecurityControlPage />} />
+                <Route path="/backup-maintenance" element={<BackupMaintenancePage />} />
+                <Route path="/communications" element={<CommunicationPage />} />
               </>
             )}
 

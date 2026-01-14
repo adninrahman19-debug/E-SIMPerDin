@@ -43,6 +43,41 @@ export enum LogCategory {
   TECHNICAL = 'TECHNICAL'
 }
 
+export interface EmployeeRank {
+  id: string;
+  name: string;
+  code: string;
+  level: string; // e.g. IV/a, III/c
+}
+
+export interface EmployeePosition {
+  id: string;
+  name: string;
+  echelon?: string;
+}
+
+export interface TravelDestination {
+  id: string;
+  name: string;
+  province: string;
+  regionType: 'DALAM_PROVINSI' | 'LUAR_PROVINSI' | 'LUAR_NEGERI';
+}
+
+export interface TravelType {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export interface BudgetActivity {
+  id: string;
+  code: string;
+  name: string;
+  year: number;
+  allocatedAmount: number;
+  usedAmount: number;
+}
+
 export interface SupportTicket {
   id: string;
   institutionName: string;
@@ -175,6 +210,14 @@ export interface Transaction {
   notes?: string;
 }
 
+export interface WorkUnit {
+  id: string;
+  name: string;
+  code: string;
+  headName?: string;
+  employeeCount: number;
+}
+
 export interface Institution {
   id: string;
   name: string;
@@ -183,6 +226,12 @@ export interface Institution {
   logoUrl?: string;
   active: boolean;
   subscriptionId?: string;
+  // New Fields
+  phone?: string;
+  email?: string;
+  website?: string;
+  letterheadHtml?: string;
+  workUnits?: WorkUnit[];
 }
 
 export interface SPPDTemplate {
@@ -210,6 +259,10 @@ export interface User {
   position?: string;
   nip?: string;
   email: string;
+  workUnitId?: string; 
+  active?: boolean;
+  rankId?: string; // New: Master link
+  positionId?: string; // New: Master link
 }
 
 export interface SPPD {

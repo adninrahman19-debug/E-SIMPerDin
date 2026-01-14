@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAuth } from '../../App';
-import { UserRole } from '../../types';
+import { UserRole, SubscriptionStatus } from '../../types';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   AreaChart, Area, Cell, PieChart, Pie, LineChart, Line, Legend
@@ -21,8 +21,14 @@ import {
   ShieldCheck,
   Globe,
   Server,
-  Zap
+  Zap,
+  Calendar,
+  Wallet,
+  ArrowUpRight,
+  Bell,
+  FileText
 } from 'lucide-react';
+import { MOCK_USERS } from '../../constants';
 
 const StatCard: React.FC<{ 
   title: string, 
@@ -78,10 +84,10 @@ const growthData = [
 ];
 
 const usageData = [
-  { name: 'Minggu 1', sppd: 450, login: 3200 },
-  { name: 'Minggu 2', sppd: 520, login: 3800 },
-  { name: 'Minggu 3', sppd: 480, login: 3500 },
-  { name: 'Minggu 4', sppd: 610, login: 4200 },
+  { name: 'Minggu 1', sppd: 45, cost: 12.5 },
+  { name: 'Minggu 2', sppd: 52, cost: 18.2 },
+  { name: 'Minggu 3', sppd: 48, cost: 15.6 },
+  { name: 'Minggu 4', sppd: 61, cost: 22.4 },
 ];
 
 const instansiStatusData = [
@@ -92,7 +98,7 @@ const instansiStatusData = [
 ];
 
 const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, subscription } = useAuth();
 
   const renderSuperAdminDash = () => (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -134,7 +140,6 @@ const DashboardPage: React.FC = () => {
 
       {/* Main Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Growth Chart */}
         <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -179,7 +184,6 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Status Distribution */}
         <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
           <h4 className="text-lg font-black text-gray-800 mb-6">Status Tenant</h4>
           <div className="flex-1 min-h-[250px] relative">
@@ -219,106 +223,163 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      {/* Bottom Section: Usage & System Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Usage Trend */}
-        <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between mb-8">
-            <h4 className="text-lg font-black text-gray-800">Intensitas Penggunaan Sistem</h4>
-            <div className="text-xs font-bold text-blue-900 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-wider">
-              Real-time Traffic
+  const renderInstitutionAdminDash = () => {
+    const institutionEmployees = MOCK_USERS.filter(u => u.institutionId === user?.institutionId).length;
+    
+    return (
+      <div className="space-y-8 animate-in fade-in duration-700">
+        {/* KPI Section Instansi */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <StatCard 
+            title="Total Pegawai" 
+            value={institutionEmployees} 
+            icon={<Users size={24} />} 
+            color="bg-blue-900" 
+            subtitle="Akun terdaftar"
+          />
+          <StatCard 
+            title="SPPD (Bulan Ini)" 
+            value="48" 
+            icon={<FileText size={24} />} 
+            color="bg-indigo-600" 
+            trend={{ value: '12%', up: true }}
+            subtitle="Volume pengajuan"
+          />
+          <StatCard 
+            title="Perlu Persetujuan" 
+            value="12" 
+            icon={<Clock size={24} />} 
+            color="bg-amber-500" 
+            subtitle="Menunggu antrean"
+          />
+          <StatCard 
+            title="Realisasi Biaya" 
+            value="Rp 154Jt" 
+            icon={<Wallet size={24} />} 
+            color="bg-emerald-600" 
+            trend={{ value: '5%', up: false }}
+            subtitle="Anggaran terpakai"
+          />
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sisa Masa Aktif</p>
+              <h3 className="text-2xl font-black text-blue-900 mt-1">232 Hari</h3>
             </div>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={usageData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10, fontWeight: 700}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10, fontWeight: 700}} />
-                <Tooltip 
-                  cursor={{fill: '#f9fafb'}}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                />
-                <Bar dataKey="sppd" fill="#1e3a8a" radius={[6, 6, 0, 0]} barSize={30} />
-                <Bar dataKey="login" fill="#cbd5e1" radius={[6, 6, 0, 0]} barSize={30} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-6 pt-6 border-t border-gray-50 flex items-center justify-center space-x-12">
-             <div className="flex items-center">
-               <div className="w-3 h-3 bg-blue-900 rounded-sm mr-2"></div>
-               <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">SPPD Diterbitkan</span>
-             </div>
-             <div className="flex items-center">
-               <div className="w-3 h-3 bg-gray-300 rounded-sm mr-2"></div>
-               <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">User Logins</span>
-             </div>
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-[10px] font-black bg-emerald-50 text-emerald-600 px-2 py-1 rounded uppercase">Aktif</span>
+              <button className="text-[10px] font-black text-blue-900 underline uppercase tracking-widest hover:text-blue-700 transition-colors">Perbarui</button>
+            </div>
           </div>
         </div>
 
-        {/* System Health & Notifications */}
-        <div className="space-y-6">
-          <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-            <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6">Status Infrastruktur</h4>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Server size={18} className="text-gray-400 mr-3" />
-                  <span className="text-sm font-bold text-gray-700">Server Cluster</span>
+        {/* Charts & Analytics */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3 space-y-8">
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h4 className="text-xl font-black text-gray-900">Analisis Perjalanan Dinas</h4>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Volume Dokumen vs Realisasi Biaya</p>
                 </div>
-                <SystemStatusIndicator status="Normal" />
+                <div className="flex space-x-6">
+                   <div className="flex items-center">
+                     <div className="w-3 h-3 bg-blue-900 rounded-full mr-2"></div>
+                     <span className="text-[10px] font-bold text-gray-500 uppercase">Jumlah SPPD</span>
+                   </div>
+                   <div className="flex items-center">
+                     <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
+                     <span className="text-[10px] font-bold text-gray-500 uppercase">Biaya (Jutaan)</span>
+                   </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Globe size={18} className="text-gray-400 mr-3" />
-                  <span className="text-sm font-bold text-gray-700">Network Latency</span>
-                </div>
-                <span className="text-xs font-black text-emerald-600">24ms</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <ShieldCheck size={18} className="text-gray-400 mr-3" />
-                  <span className="text-sm font-bold text-gray-700">Security Scans</span>
-                </div>
-                <span className="text-[10px] font-black bg-blue-50 text-blue-900 px-2 py-0.5 rounded uppercase">Passed</span>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={usageData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11, fontWeight: 700}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11, fontWeight: 700}} />
+                    <Tooltip 
+                      cursor={{fill: '#f9fafb'}}
+                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                    />
+                    <Bar dataKey="sppd" fill="#1e3a8a" radius={[6, 6, 0, 0]} barSize={35} />
+                    <Bar dataKey="cost" fill="#10b981" radius={[6, 6, 0, 0]} barSize={35} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
-            <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
-               <div className="flex items-center justify-between mb-2">
-                 <span className="text-[10px] font-black text-gray-400 uppercase">Uptime 30 Hari</span>
-                 <span className="text-xs font-black text-gray-800">99.98%</span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                  <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6">Tren Anggaran Bulanan</h4>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={growthData}>
+                        <Area type="monotone" dataKey="revenue" stroke="#10b981" fill="#ecfdf5" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
                </div>
-               <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                 <div className="h-full bg-blue-900 w-[99.98%] rounded-full"></div>
+               <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                  <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6">Aktivitas Pegawai Teraktif</h4>
+                  <div className="space-y-4">
+                    {[
+                      { name: 'Andi Pratama', count: 12, dept: 'Bag. Umum' },
+                      { name: 'Siti Aminah', count: 8, dept: 'Teknis' },
+                      { name: 'Budi Raharjo', count: 7, dept: 'Humas' }
+                    ].map((peg, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-blue-900 text-white rounded-lg flex items-center justify-center font-bold text-xs mr-3">{peg.name.charAt(0)}</div>
+                          <div>
+                            <p className="text-xs font-black text-gray-800">{peg.name}</p>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase">{peg.dept}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-black text-blue-900">{peg.count} SPPD</span>
+                      </div>
+                    ))}
+                  </div>
                </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-indigo-900 to-blue-900 p-8 rounded-2xl text-white shadow-xl relative overflow-hidden">
-            <div className="relative z-10">
-              <Zap size={24} className="text-amber-400 mb-4" />
-              <h4 className="text-lg font-black mb-2">Peringatan Penting</h4>
-              <div className="space-y-3 mt-4">
-                 <div className="flex items-start space-x-3 text-xs">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0"></div>
-                    <p className="opacity-80">12 Tenant akan segera berakhir dalam 7 hari kedepan.</p>
+          <div className="space-y-6">
+            <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+              <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center">
+                <Bell size={16} className="mr-2" /> Pusat Informasi
+              </h4>
+              <div className="space-y-6">
+                 <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <p className="text-[10px] font-black text-amber-900 uppercase mb-1">Limit SPPD Tercapai 80%</p>
+                    <p className="text-[11px] text-amber-800 leading-relaxed font-medium">Sisa kuota SPPD bulan ini tinggal 10 dokumen. Segera upgrade paket jika dibutuhkan.</p>
                  </div>
-                 <div className="flex items-start space-x-3 text-xs">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div>
-                    <p className="opacity-80">Rencana maintenance rutin Minggu besok pukul 02:00 WIB.</p>
+                 <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p className="text-[10px] font-black text-blue-900 uppercase mb-1">Update Template Global</p>
+                    <p className="text-[11px] text-blue-800 leading-relaxed font-medium">Tersedia format KWITANSI baru v2.5 dari pusat. Silakan terapkan pada menu Template.</p>
                  </div>
               </div>
-              <button className="w-full mt-6 bg-white/10 hover:bg-white/20 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-colors border border-white/10">
-                Lihat Semua Notifikasi
-              </button>
+              <button className="w-full mt-6 py-3 border border-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-blue-900 hover:bg-gray-50 transition-all">Lihat Seluruh Notifikasi</button>
             </div>
-            <div className="absolute -right-12 -bottom-12 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
+
+            <div className="bg-blue-900 text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+               <div className="relative z-10">
+                 <ShieldCheck size={32} className="text-amber-400 mb-6" />
+                 <h4 className="text-lg font-black mb-2">Keamanan Data</h4>
+                 <p className="text-blue-100 text-[10px] font-bold uppercase leading-relaxed tracking-tight opacity-80">
+                   Data instansi Anda dienkripsi AES-256 dan terisolasi sepenuhnya dari tenant lain. Terakhir backup otomatis: Hari ini 00:00.
+                 </p>
+               </div>
+               <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderStandardDash = () => (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -332,8 +393,8 @@ const DashboardPage: React.FC = () => {
       <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h4 className="text-lg font-black text-gray-800">Realisasi Anggaran Perjalanan Dinas (Rp)</h4>
-            <p className="text-xs text-gray-400 font-medium">Berdasarkan SPPD yang diterbitkan per bulan</p>
+            <h4 className="text-lg font-black text-gray-800">Riwayat Perjalanan Dinas Saya</h4>
+            <p className="text-xs text-gray-400 font-medium">Monitoring status pengajuan 6 bulan terakhir</p>
           </div>
           <select className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-600 outline-none focus:ring-2 focus:ring-blue-900/10">
             <option>Tahun 2024</option>
@@ -348,7 +409,7 @@ const DashboardPage: React.FC = () => {
               <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11, fontWeight: 700}} />
               <Tooltip 
                 cursor={{fill: '#f9fafb'}}
-                formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}jt`} 
+                formatter={(value: number) => `${value} SPPD`} 
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
               />
               <Bar dataKey="revenue" fill="#1e3a8a" radius={[6, 6, 0, 0]} barSize={40} />
@@ -366,17 +427,21 @@ const DashboardPage: React.FC = () => {
           <h2 className="text-3xl font-black text-gray-900 tracking-tight">Halo, {user?.name}</h2>
           <p className="text-gray-500 font-medium mt-1">
             {user?.role === UserRole.SUPER_ADMIN 
-              ? 'Selamat datang di pusat kendali platform E-SIMPerDin.' 
-              : 'Berikut ringkasan manajemen perjalanan dinas instansi Anda.'}
+              ? 'Pusat kendali platform E-SIMPerDin global.' 
+              : user?.role === UserRole.ADMIN_INSTANSI 
+                ? 'Ringkasan manajemen perjalanan dinas instansi Anda.'
+                : 'Status dan aktivitas perjalanan dinas Anda.'}
           </p>
         </div>
-        <div className="flex items-center space-x-3 text-xs font-bold text-gray-400 bg-white px-4 py-2 rounded-xl border border-gray-100">
+        <div className="flex items-center space-x-3 text-xs font-bold text-gray-400 bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm">
            <Clock size={14} className="text-blue-900" />
            <span>Terakhir diperbarui: {new Date().toLocaleTimeString('id-ID')} WIB</span>
         </div>
       </div>
 
-      {user?.role === UserRole.SUPER_ADMIN ? renderSuperAdminDash() : renderStandardDash()}
+      {user?.role === UserRole.SUPER_ADMIN && renderSuperAdminDash()}
+      {user?.role === UserRole.ADMIN_INSTANSI && renderInstitutionAdminDash()}
+      {![UserRole.SUPER_ADMIN, UserRole.ADMIN_INSTANSI].includes(user?.role as UserRole) && renderStandardDash()}
     </div>
   );
 };

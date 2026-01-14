@@ -25,7 +25,9 @@ import {
   Megaphone,
   Settings,
   Zap,
-  LifeBuoy
+  LifeBuoy,
+  Building,
+  Database
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean }> = ({ to, icon, label, active }) => (
@@ -70,9 +72,11 @@ const Layout: React.FC = () => {
     { to: '/demo-center', icon: <Zap size={18} />, label: 'Demo Mode', roles: [UserRole.SUPER_ADMIN] },
     { to: '/support-center', icon: <LifeBuoy size={18} />, label: 'Help & Support', roles: [UserRole.SUPER_ADMIN] },
     
-    // Institution Specific Role (Keep them separated for non-superadmin)
+    // Institution Specific Role
     { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD', roles: [UserRole.ADMIN_INSTANSI, UserRole.OPERATOR, UserRole.PEJABAT_PENYETUJU, UserRole.PEGAWAI] },
     { to: '/users', icon: <Users size={18} />, label: 'Manajemen Pengguna', roles: [UserRole.ADMIN_INSTANSI] },
+    { to: '/master-data', icon: <Database size={18} />, label: 'Master Data', roles: [UserRole.ADMIN_INSTANSI] },
+    { to: '/institution-profile', icon: <Building size={18} />, label: 'Profil Instansi', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/standar-biaya', icon: <WalletCards size={18} />, label: 'Standar Biaya', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/templates', icon: <FileCode size={18} />, label: 'Template Dokumen', roles: [UserRole.ADMIN_INSTANSI] },
     { to: '/langganan', icon: <CreditCard size={18} />, label: 'Billing & Paket', roles: [UserRole.ADMIN_INSTANSI] },

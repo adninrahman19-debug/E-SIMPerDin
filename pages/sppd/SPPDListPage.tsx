@@ -38,7 +38,8 @@ import {
   Send,
   CheckCircle2 as VerifiedIcon,
   Lock,
-  FileSearch
+  FileSearch,
+  Trash2
 } from 'lucide-react';
 
 const SPPDListPage: React.FC = () => {
@@ -65,13 +66,14 @@ const SPPDListPage: React.FC = () => {
     { id: '4', num: 'DRAFT-2024-X8', purpose: 'Rapat Koordinasi Lintas Sektoral', destination: 'Medan', date: '01-06-2024', employee: 'Andi Pratama', empId: 'u-5', unit: 'Sekretariat', cost: '5.500.000', transport: 'Pesawat', status: SPPDStatus.DRAFT, transportation: 'Pesawat' },
   ]);
 
-  // Filter templates yang relevan (Global atau milik instansi ini)
   const availableTemplates = MOCK_TEMPLATES.filter(t => t.category === TemplateCategory.SPPD && (t.institutionId === 'GLOBAL' || t.institutionId === user?.institutionId));
 
   const filteredSppds = mockSppds.filter(s => {
     const matchesSearch = s.num.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         s.employee.toLowerCase().includes(searchTerm.toLowerCase());
-    // STRICT ISOLATION: Pegawai hanya bisa melihat data miliknya sendiri
+                         s.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         s.destination.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Pegawai hanya boleh melihat data miliknya sendiri
     if (isPegawai) return s.empId === user?.id && matchesSearch;
     return matchesSearch;
   });
@@ -99,6 +101,13 @@ const SPPDListPage: React.FC = () => {
     }
   }, [selectedSppdForApproval, handleAiAnalysis]);
 
+  const handleDeleteSppd = (id: string) => {
+    if(confirm('Apakah Anda yakin ingin menghapus pengajuan DRAFT ini secara permanen?')) {
+      setMockSppds(mockSppds.filter(s => s.id !== id));
+      alert('Pengajuan berhasil dihapus.');
+    }
+  };
+
   const handleDecision = (id: string, status: SPPDStatus) => {
     if ((status === SPPDStatus.REVISION || status === SPPDStatus.REJECTED) && !officialNote) {
       alert('Harap masukkan catatan resmi untuk alasan penolakan atau revisi.');
@@ -108,18 +117,6 @@ const SPPDListPage: React.FC = () => {
     alert(`Status SPPD berhasil diperbarui menjadi ${status.replace('_', ' ')}.`);
     setSelectedSppdForApproval(null);
     setOfficialNote('');
-  };
-
-  const handleArchive = (id: string) => {
-    if(confirm('Arsipkan dokumen ini? Dokumen yang diarsipkan tidak dapat diubah lagi.')) {
-      handleDecision(id, SPPDStatus.ARCHIVED);
-    }
-  };
-
-  const handleCancel = (id: string) => {
-    if(confirm('Batalkan pengajuan SPPD ini secara permanen?')) {
-      handleDecision(id, SPPDStatus.REJECTED);
-    }
   };
 
   const handlePrint = () => {
@@ -196,7 +193,8 @@ const SPPDListPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
               {filteredSppds.length > 0 ? filteredSppds.map((sppd) => {
-                const canEdit = (isAdmin || isOperator || isPegawai) && [SPPDStatus.DRAFT, SPPDStatus.REVISION].includes(sppd.status);
+                const canEdit = [SPPDStatus.DRAFT, SPPDStatus.REVISION].includes(sppd.status);
+                const canDelete = isPegawai && sppd.status === SPPDStatus.DRAFT;
                 const canPrint = sppd.status === SPPDStatus.APPROVED || sppd.status === SPPDStatus.ARCHIVED;
 
                 return (
@@ -225,7 +223,7 @@ const SPPDListPage: React.FC = () => {
                     <td className="px-6 py-6 text-center">{getStatusBadge(sppd.status)}</td>
                     <td className="px-8 py-6 text-right">
                       <div className="flex items-center justify-end space-x-2">
-                        {/* Aksi Lihat Detail - Mandat Pegawai */}
+                        {/* Lihat Detail */}
                         <button 
                           onClick={() => setSelectedSppdForDetail(sppd)} 
                           className="p-2.5 text-gray-400 hover:text-blue-900 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100"
@@ -234,33 +232,46 @@ const SPPDListPage: React.FC = () => {
                           <Eye size={18} />
                         </button>
                         
-                        {/* Aksi Edit & Kirim */}
+                        {/* Edit & Kirim */}
                         {canEdit && (
                           <Link to={`/sppd/edit/${sppd.id}`} className="flex items-center space-x-2 bg-gray-900 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-900 transition-all shadow-md">
                             <FileEdit size={14} />
-                            <span>Edit & Kirim</span>
+                            <span>Edit</span>
                           </Link>
                         )}
 
-                        {/* Aksi Cetak - Mandat Pegawai */}
+                        {/* Cetak */}
                         {canPrint && (
                           <button 
                             onClick={() => setShowPrintModal(sppd)}
                             className="p-2.5 text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-600 hover:text-white rounded-xl transition-all shadow-sm"
-                            title="Cetak SPPD Pribadi"
+                            title="Cetak Dokumen Resmi"
                           >
                             <Printer size={18} />
                           </button>
                         )}
 
-                        {/* Aksi Download - Mandat Pegawai */}
-                        <button 
-                          onClick={() => handleDownload(sppd.num)}
-                          className="p-2.5 text-gray-400 hover:text-indigo-600 bg-white rounded-xl border border-gray-100 shadow-sm transition-all"
-                          title="Download Dokumen"
-                        >
-                          <Download size={18} />
-                        </button>
+                        {/* Hapus (Hanya untuk Draft Pegawai) */}
+                        {canDelete && (
+                          <button 
+                            onClick={() => handleDeleteSppd(sppd.id)}
+                            className="p-2.5 text-gray-400 hover:text-red-600 bg-white rounded-xl border border-gray-100 shadow-sm transition-all"
+                            title="Hapus Draft"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+
+                        {/* Download ZIP */}
+                        {canPrint && (
+                          <button 
+                            onClick={() => handleDownload(sppd.num)}
+                            className="p-2.5 text-gray-400 hover:text-indigo-600 bg-white rounded-xl border border-gray-100 shadow-sm transition-all"
+                            title="Download ZIP"
+                          >
+                            <Download size={18} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -278,7 +289,7 @@ const SPPDListPage: React.FC = () => {
         </div>
       </div>
 
-      {/* DETAIL MODAL (Pegawai View Only) */}
+      {/* DETAIL MODAL */}
       {selectedSppdForDetail && (
          <div className="fixed inset-0 bg-blue-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
             <div className="bg-white w-full max-w-3xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
@@ -286,7 +297,7 @@ const SPPDListPage: React.FC = () => {
                   <div className="flex items-center space-x-4">
                      <div className="w-14 h-14 bg-blue-900 text-white rounded-2xl flex items-center justify-center shadow-lg"><FileSearch size={28} /></div>
                      <div>
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight">Rincian SPPD Saya</h4>
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight">Rincian SPPD</h4>
                         <p className="text-sm text-gray-500 font-medium">No Dokumen: {selectedSppdForDetail.num}</p>
                      </div>
                   </div>
@@ -327,7 +338,7 @@ const SPPDListPage: React.FC = () => {
                               <Wallet size={100} className="absolute -right-4 -bottom-4 text-emerald-900/5 rotate-12" />
                            </div>
                            <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100 flex items-center justify-between">
-                              <span className="text-[9px] font-black text-blue-900 uppercase">Status Approval</span>
+                              <span className="text-[9px] font-black text-blue-900 uppercase">Status Terkini</span>
                               <span className="text-xs font-black uppercase text-blue-900">{selectedSppdForDetail.status.replace('_', ' ')}</span>
                            </div>
                         </div>
@@ -337,7 +348,7 @@ const SPPDListPage: React.FC = () => {
 
                <div className="p-10 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                   <div className="flex items-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                     <ShieldCheck size={18} className="mr-2 text-blue-900" /> Dokumen Pribadi Terenkripsi
+                     <ShieldCheck size={18} className="mr-2 text-blue-900" /> Dokumen Terenkripsi & Aman
                   </div>
                   <button 
                      onClick={() => setSelectedSppdForDetail(null)}
@@ -350,7 +361,7 @@ const SPPDListPage: React.FC = () => {
          </div>
       )}
 
-      {/* MODAL PRINT & TEMPLATE PICKER */}
+      {/* MODAL PRINT */}
       {showPrintModal && (
         <div className="fixed inset-0 bg-blue-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
            <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
@@ -359,7 +370,7 @@ const SPPDListPage: React.FC = () => {
                     <div className="w-14 h-14 bg-blue-900 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-900/20"><Printer size={28} /></div>
                     <div>
                        <h4 className="text-2xl font-black text-gray-900 tracking-tight">Cetak Dokumen Resmi</h4>
-                       <p className="text-sm text-gray-500 font-medium">Pilih template tata naskah dinas untuk SPPD ini.</p>
+                       <p className="text-sm text-gray-500 font-medium">Pilih template tata naskah dinas.</p>
                     </div>
                  </div>
                  <button onClick={() => setShowPrintModal(null)} className="p-4 bg-white border border-gray-100 hover:bg-gray-100 rounded-3xl text-gray-400 transition-all shadow-sm"><X size={24} /></button>

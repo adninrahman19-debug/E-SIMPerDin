@@ -63,6 +63,7 @@ const Dashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
                 <defs>
+                  {/* Fix: removed duplicate x1 attribute */}
                   <linearGradient id="colorSppd" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.1}/>
                     <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0}/>

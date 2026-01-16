@@ -1,53 +1,55 @@
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import { User, UserRole, Subscription } from './types';
+import { User, Subscription } from './types';
 import { MOCK_USERS, MOCK_SUBSCRIPTIONS } from './constants';
 
-// Auth & Public
-import LoginPage from './pages/auth/LoginPage';
+// Dasar & Auth
 import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/auth/LoginPage';
+import Layout from './components/Layout';
 
-// Shared & Core Transactions (SPPD)
-import DashboardPage from './pages/dashboard/DashboardPage';
-import SPPDListPage from './pages/sppd/SPPDListPage';
-import SPPDFormPage from './pages/sppd/SPPDFormPage';
-import DigitalArchivePage from './pages/sppd/DigitalArchivePage';
-import MonitoringPage from './pages/sppd/MonitoringPage';
-import ApprovalHistoryPage from './pages/sppd/ApprovalHistoryPage';
-
-// Shared User
-import ProfilePage from './pages/user/ProfilePage';
-
-// SUPER ADMIN PAGES (Global Platform Management)
-import InstitutionManagementPage from './pages/super-admin/InstitutionManagementPage';
-import SubscriptionBillingPage from './pages/super-admin/SubscriptionBillingPage';
-import GlobalTemplatePage from './pages/super-admin/GlobalTemplatePage';
-import GlobalCostStandardsPage from './pages/super-admin/GlobalCostStandardsPage';
-import SystemMonitoringPage from './pages/super-admin/SystemMonitoringPage';
-import SecurityControlPage from './pages/super-admin/SecurityControlPage';
-import BackupMaintenancePage from './pages/super-admin/BackupMaintenancePage';
-import CommunicationPage from './pages/super-admin/CommunicationPage';
-import SystemSettingsPage from './pages/super-admin/SystemSettingsPage';
-import DemoManagementPage from './pages/super-admin/DemoManagementPage';
-import SupportCenterPage from './pages/super-admin/SupportCenterPage';
-import UserManagementPageShared from './pages/admin/UserManagementPage';
-
-// ADMIN INSTANSI PAGES (Local Institution Management)
-import InstitutionProfilePage from './pages/admin-instansi/InstitutionProfilePage';
-import InstitutionConfigPage from './pages/admin-instansi/InstitutionConfigPage';
-import MasterDataPage from './pages/admin-instansi/MasterDataPage';
-import ReportsPage from './pages/admin-instansi/ReportsPage';
-import MySubscriptionPage from './pages/admin-instansi/MySubscriptionPage';
-import CostStandardsPageAdmin from './pages/admin-instansi/CostStandardsPage';
-import TemplateManagementPageAdmin from './pages/admin-instansi/TemplateManagementPage';
-
-// Landing Detail Pages
+// Detail Pages (Public)
 import FeaturesPage from './pages/details/FeaturesPage';
 import RolesPage from './pages/details/RolesPage';
-import PricingPage from './pages/details/PricingPage';
 import SecurityPage from './pages/details/SecurityPage';
+import PricingPage from './pages/details/PricingPage';
+
+// Dashboard Router
+import DashboardPage from './pages/dashboard/DashboardPage';
+
+// Modul SPPD (Umum & Pegawai)
+import SPPDListPage from './pages/sppd/SPPDListPage';
+import SPPDFormPage from './pages/sppd/SPPDFormPage';
+import MonitoringPage from './pages/sppd/MonitoringPage';
+import ApprovalHistoryPage from './pages/sppd/ApprovalHistoryPage';
+import DigitalArchivePage from './pages/sppd/DigitalArchivePage';
+
+// Modul Admin Instansi
+import UserManagementPageInstansi from './pages/admin-instansi/UserManagementPage';
+import MasterDataPageInstansi from './pages/admin-instansi/MasterDataPage';
+import CostStandardsPageInstansi from './pages/admin-instansi/CostStandardsPage';
+import InstitutionProfilePageInstansi from './pages/admin-instansi/InstitutionProfilePage';
+import InstitutionConfigPageInstansi from './pages/admin-instansi/InstitutionConfigPage';
+import ReportsPageInstansi from './pages/admin-instansi/ReportsPage';
+import TemplateManagementPageInstansi from './pages/admin-instansi/TemplateManagementPage';
+import TemplateEditorPageInstansi from './pages/admin-instansi/TemplateEditorPage';
+
+// Modul Super Admin
+import InstitutionManagementPageSuper from './pages/super-admin/InstitutionManagementPage';
+import SubscriptionBillingPageSuper from './pages/super-admin/SubscriptionBillingPage';
+import GlobalCostStandardsPageSuper from './pages/super-admin/GlobalCostStandardsPage';
+import GlobalTemplatePageSuper from './pages/super-admin/GlobalTemplatePage';
+import SystemMonitoringPageSuper from './pages/super-admin/SystemMonitoringPage';
+import SecurityControlPageSuper from './pages/super-admin/SecurityControlPage';
+import BackupMaintenancePageSuper from './pages/super-admin/BackupMaintenancePage';
+import CommunicationPageSuper from './pages/super-admin/CommunicationPage';
+import SystemSettingsPageSuper from './pages/super-admin/SystemSettingsPage';
+import DemoManagementPageSuper from './pages/super-admin/DemoManagementPage';
+import SupportCenterPageSuper from './pages/super-admin/SupportCenterPage';
+
+// User Profile
+import ProfilePage from './pages/user/ProfilePage';
 
 interface AuthContextType {
   user: User | null;
@@ -72,24 +74,20 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedUser = localStorage.getItem('simperdin_user');
     if (savedUser) {
-      const parsedUser: User = JSON.parse(savedUser);
+      const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
-      if (parsedUser.institutionId) {
-        const sub = MOCK_SUBSCRIPTIONS.find(s => s.institutionId === parsedUser.institutionId);
-        setSubscription(sub || null);
-      }
+      const sub = MOCK_SUBSCRIPTIONS.find(s => s.institutionId === parsedUser.institutionId);
+      setSubscription(sub || null);
     }
     setLoading(false);
   }, []);
 
-  const login = (username: string) => {
+  const login = (username: string): boolean => {
     const foundUser = MOCK_USERS.find(u => u.username === username);
     if (foundUser) {
       setUser(foundUser);
-      if (foundUser.institutionId) {
-        const sub = MOCK_SUBSCRIPTIONS.find(s => s.institutionId === foundUser.institutionId);
-        setSubscription(sub || null);
-      }
+      const sub = MOCK_SUBSCRIPTIONS.find(s => s.institutionId === foundUser.institutionId);
+      setSubscription(sub || null);
       localStorage.setItem('simperdin_user', JSON.stringify(foundUser));
       return true;
     }
@@ -102,7 +100,7 @@ const App: React.FC = () => {
     localStorage.removeItem('simperdin_user');
   };
 
-  if (loading) return <div className="flex h-screen items-center justify-center font-bold text-blue-900 uppercase tracking-widest animate-pulse">E-SIMPerDin Engine Loading...</div>;
+  if (loading) return null;
 
   return (
     <AuthContext.Provider value={{ user, subscription, login, logout }}>
@@ -110,56 +108,46 @@ const App: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/fitur" element={<FeaturesPage />} />
-          <Route path="/peran" element={<RolesPage />} />
-          <Route path="/harga" element={<PricingPage />} />
-          <Route path="/keamanan" element={<SecurityPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/roles" element={<RolesPage />} />
+          <Route path="/security" element={<SecurityPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" />} />
           
-          {/* Authenticated Layout */}
+          {/* Protected Routes */}
           <Route element={user ? <Layout /> : <Navigate to="/login" />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
             
-            {/* CORE TRANSACTIONS */}
             <Route path="/sppd" element={<SPPDListPage />} />
             <Route path="/sppd/baru" element={<SPPDFormPage />} />
             <Route path="/sppd/edit/:id" element={<SPPDFormPage />} />
-            <Route path="/monitoring" element={<MonitoringPage />} />
-            <Route path="/riwayat-persetujuan" element={<ApprovalHistoryPage />} />
+            <Route path="/sppd/monitoring" element={<MonitoringPage />} />
+            <Route path="/sppd/history" element={<ApprovalHistoryPage />} />
             <Route path="/arsip-digital" element={<DigitalArchivePage />} />
 
-            {/* SUPER ADMIN MODULES */}
-            {user?.role === UserRole.SUPER_ADMIN && (
-              <>
-                <Route path="/super-admin/institusi" element={<InstitutionManagementPage />} />
-                <Route path="/super-admin/users" element={<UserManagementPageShared />} />
-                <Route path="/super-admin/billing" element={<SubscriptionBillingPage />} />
-                <Route path="/super-admin/templates" element={<GlobalTemplatePage />} />
-                <Route path="/super-admin/sbm" element={<GlobalCostStandardsPage />} />
-                <Route path="/super-admin/monitoring" element={<SystemMonitoringPage />} />
-                <Route path="/super-admin/security" element={<SecurityControlPage />} />
-                <Route path="/super-admin/backup" element={<BackupMaintenancePage />} />
-                <Route path="/super-admin/communications" element={<CommunicationPage />} />
-                <Route path="/super-admin/settings" element={<SystemSettingsPage />} />
-                <Route path="/super-admin/demo" element={<DemoManagementPage />} />
-                <Route path="/super-admin/support" element={<SupportCenterPage />} />
-              </>
-            )}
+            <Route path="/admin/users" element={<UserManagementPageInstansi />} />
+            <Route path="/admin/master-data" element={<MasterDataPageInstansi />} />
+            <Route path="/admin/sbm" element={<CostStandardsPageInstansi />} />
+            <Route path="/admin/profile" element={<InstitutionProfilePageInstansi />} />
+            <Route path="/admin/config" element={<InstitutionConfigPageInstansi />} />
+            <Route path="/admin/reports" element={<ReportsPageInstansi />} />
+            <Route path="/admin/templates" element={<TemplateManagementPageInstansi />} />
+            <Route path="/admin/templates/baru" element={<TemplateEditorPageInstansi />} />
+            <Route path="/admin/templates/edit/:id" element={<TemplateEditorPageInstansi />} />
 
-            {/* ADMIN INSTANSI MODULES */}
-            {user?.role === UserRole.ADMIN_INSTANSI && (
-              <>
-                <Route path="/admin/profile" element={<InstitutionProfilePage />} />
-                <Route path="/admin/config" element={<InstitutionConfigPage />} />
-                <Route path="/admin/master-data" element={<MasterDataPage />} />
-                <Route path="/admin/reports" element={<ReportsPage />} />
-                <Route path="/admin/sbm" element={<CostStandardsPageAdmin />} /> 
-                <Route path="/admin/subscription" element={<MySubscriptionPage />} />
-                <Route path="/admin/templates" element={<TemplateManagementPageAdmin />} /> 
-                <Route path="/admin/users" element={<UserManagementPageShared />} />
-              </>
-            )}
+            <Route path="/super/tenants" element={<InstitutionManagementPageSuper />} />
+            <Route path="/super/billing" element={<SubscriptionBillingPageSuper />} />
+            <Route path="/super/sbm" element={<GlobalCostStandardsPageSuper />} />
+            <Route path="/super/templates" element={<GlobalTemplatePageSuper />} />
+            <Route path="/super/monitoring" element={<SystemMonitoringPageSuper />} />
+            <Route path="/super/security" element={<SecurityControlPageSuper />} />
+            <Route path="/super/backup" element={<BackupMaintenancePageSuper />} />
+            <Route path="/super/communication" element={<CommunicationPageSuper />} />
+            <Route path="/super/settings" element={<SystemSettingsPageSuper />} />
+            <Route path="/super/demo" element={<DemoManagementPageSuper />} />
+            <Route path="/super/support" element={<SupportCenterPageSuper />} />
+
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </HashRouter>

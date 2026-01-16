@@ -31,7 +31,6 @@ import {
   MoreVertical,
   Layers,
   Database,
-  // Added missing imports for ShieldAlert and Save icons
   ShieldAlert,
   Save
 } from 'lucide-react';
@@ -160,7 +159,7 @@ const InstitutionManagementPage: React.FC = () => {
             />
           </div>
           <div className="flex items-center space-x-3">
-             <button className="p-3.5 text-gray-400 hover:text-blue-900 bg-white rounded-2xl border border-gray-200 shadow-sm transition-all"><Filter size={20} /></button>
+             <button className="p-3.5 text-gray-400 hover:text-blue-900 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all"><Filter size={20} /></button>
              <select className="bg-white border border-gray-200 text-gray-700 text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3.5 rounded-[1.5rem] outline-none shadow-sm cursor-pointer">
                 <option>Filter Status</option>
                 <option>Pemerintah</option>
@@ -227,7 +226,7 @@ const InstitutionManagementPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-8">
-                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inst.active ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inst.active ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
                          {inst.active ? 'Active' : 'Suspended'}
                        </span>
                     </td>
@@ -381,11 +380,11 @@ const InstitutionManagementPage: React.FC = () => {
                          <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mulai Aktif</label>
-                               <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none font-bold" />
+                               <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold" />
                             </div>
                             <div className="space-y-2">
                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Berakhir Pada</label>
-                               <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none font-bold" />
+                               <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold" />
                             </div>
                          </div>
                          <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100 flex items-start space-x-3">

@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../../App';
 import { MOCK_USERS, MOCK_INSTITUTIONS } from '../../constants';
 import { UserRole, User } from '../../types';
-// Added Edit3 to the lucide-react imports
 import { 
   UserPlus, 
   MoreVertical, 
@@ -177,7 +176,7 @@ const UserManagementPage: React.FC = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input 
             type="text" 
-            placeholder="Cari Nama, NIP, atau Email..."
+            placeholder="Cari Nama NIP, atau Email..."
             className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-900/10 font-medium text-sm transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

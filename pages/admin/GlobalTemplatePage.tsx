@@ -13,6 +13,7 @@ import {
   ShieldCheck, 
   Settings,
   ChevronRight,
+  /* Added missing icon imports */
   Info,
   CheckCircle2,
   X,
@@ -135,7 +136,8 @@ const GlobalTemplatePage: React.FC = () => {
                   >
                     <div className="flex items-center space-x-3">
                       {getCategoryIcon(cat)}
-                      <span className="capitalize">{cat.replace('_', ' ')}</span>
+                      {/* Fix: cast cat as string to access replace method */}
+                      <span className="capitalize">{(cat as string).replace('_', ' ')}</span>
                     </div>
                     <ChevronRight size={16} className={activeCategory === cat ? 'opacity-100' : 'opacity-20'} />
                   </button>

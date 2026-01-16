@@ -20,22 +20,103 @@ export enum SubscriptionStatus {
   TRIAL = 'TRIAL',
   ACTIVE = 'AKTIF',
   EXPIRED = 'KADALUWARSA',
-  SUSPENDED = 'DITANGGUHKAN'
+  /* Added SUSPENDED status */
+  SUSPENDED = 'SUSPENDED'
 }
 
-export enum TransactionStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'DISETUJUI',
-  REJECTED = 'DITOLAK'
-}
-
+/* Added TemplateCategory enum */
 export enum TemplateCategory {
   SPPD = 'SPPD',
+  SURAT_TUGAS = 'SURAT_TUGAS',
   KWITANSI = 'KWITANSI',
-  LAPORAN = 'LAPORAN',
-  SURAT_TUGAS = 'SURAT_TUGAS'
+  LAPORAN = 'LAPORAN'
 }
 
+export interface User {
+  id: string;
+  username: string;
+  name: string;
+  role: UserRole;
+  institutionId?: string;
+  email: string;
+  /* Added optional active property */
+  active?: boolean;
+  nip?: string;
+  position?: string;
+}
+
+/* Added WorkUnit interface */
+export interface WorkUnit {
+  id: string;
+  name: string;
+  code: string;
+  headName: string;
+  employeeCount: number;
+}
+
+/* Added Institution interface */
+export interface Institution {
+  id: string;
+  name: string;
+  code: string;
+  address: string;
+  active: boolean;
+  phone?: string;
+  email?: string;
+  website?: string;
+  letterheadHtml?: string;
+  letterhead?: string;
+  workUnits?: WorkUnit[];
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  userLimit: number;
+  sppdLimit: number;
+  features: string[];
+  /* Added missing limitation and feature properties */
+  hasCustomTemplates?: boolean;
+  approvalLevels?: number;
+  storageGb?: number;
+}
+
+// Added Subscription interface to fix import error in App.tsx
+export interface Subscription {
+  institutionId: string;
+  planId: string;
+  status: SubscriptionStatus;
+  endDate: string;
+}
+
+/* Added TransactionStatus enum */
+export enum TransactionStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
+/* Added Transaction interface */
+export interface Transaction {
+  id: string;
+  institutionId: string;
+  planId: string;
+  amount: number;
+  status: TransactionStatus;
+  createdAt: string;
+}
+
+/* Added CostStandard interface */
+export interface CostStandard {
+  id: string;
+  destination: string;
+  perDiem: number;
+  lodging: number;
+  transportBase: number;
+}
+
+/* Added LogCategory enum */
 export enum LogCategory {
   ADMIN_ACTION = 'ADMIN_ACTION',
   SUBSCRIPTION = 'SUBSCRIPTION',
@@ -43,70 +124,63 @@ export enum LogCategory {
   TECHNICAL = 'TECHNICAL'
 }
 
-export interface EmployeeRank {
+/* Added SystemLogEntry interface */
+export interface SystemLogEntry {
   id: string;
-  name: string;
-  code: string;
-  level: string; // e.g. IV/a, III/c
+  timestamp: string;
+  category: LogCategory;
+  userName: string;
+  ipAddress: string;
+  action: string;
+  details: string;
+  status: 'SUCCESS' | 'WARNING' | 'ERROR';
 }
 
-export interface EmployeePosition {
+/* Added BackupEntry interface */
+export interface BackupEntry {
   id: string;
-  name: string;
-  echelon?: string;
+  timestamp: string;
+  sizeMb: number;
+  type: 'MANUAL' | 'AUTOMATIC';
+  status: 'COMPLETED' | 'FAILED' | 'IN_PROGRESS';
+  createdBy: string;
+  fileName: string;
 }
 
-export interface TravelDestination {
+/* Added BroadcastMessage interface */
+export interface BroadcastMessage {
   id: string;
-  name: string;
-  province: string;
-  regionType: 'DALAM_PROVINSI' | 'LUAR_PROVINSI' | 'LUAR_NEGERI';
-}
-
-export interface TravelType {
-  id: string;
-  name: string;
-  code: string;
-}
-
-export interface BudgetActivity {
-  id: string;
-  code: string;
-  name: string;
-  year: number;
-  allocatedAmount: number;
-  usedAmount: number;
-}
-
-export interface SupportTicket {
-  id: string;
-  institutionName: string;
   subject: string;
-  message: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  content: string;
+  target: 'ALL' | 'ACTIVE_ONLY' | 'TRIAL_ONLY';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   createdAt: string;
-  slaDeadline: string;
-  category: 'BILLING' | 'TECHNICAL' | 'FEATURE_REQUEST' | 'SECURITY';
+  sentBy: string;
+  readCount: number;
 }
 
-export interface FAQItem {
+/* Added EmailTemplate interface */
+export interface EmailTemplate {
   id: string;
-  question: string;
-  answer: string;
-  category: string;
-  isPublished: boolean;
-}
-
-export interface HelpDoc {
-  id: string;
-  title: string;
-  category: string;
-  views: number;
+  type: string;
+  subject: string;
+  body: string;
   lastUpdated: string;
-  type: 'ARTICLE' | 'VIDEO';
 }
 
+/* Added SystemConfig interface */
+export interface SystemConfig {
+  appName: string;
+  version: string;
+  footerText: string;
+  legalText: string;
+  defaultLanguage: 'ID' | 'EN';
+  dateFormat: string;
+  timezone: string;
+  numberFormat: string;
+}
+
+/* Added DemoSession interface */
 export interface DemoSession {
   id: string;
   institutionName: string;
@@ -117,183 +191,44 @@ export interface DemoSession {
   status: 'ACTIVE' | 'EXPIRED' | 'CONVERTED';
 }
 
-export interface DemoUsageStats {
-  date: string;
-  generations: number;
-  activeLogins: number;
-}
-
-export interface SystemConfig {
-  appName: string;
-  appLogoUrl: string;
-  footerText: string;
-  legalText: string;
-  version: string;
-  defaultLanguage: 'ID' | 'EN';
-  timezone: string;
-  dateFormat: string;
-  numberFormat: string;
-}
-
-export interface SystemLogEntry {
+/* Added SupportTicket interface */
+export interface SupportTicket {
   id: string;
-  timestamp: string;
-  category: LogCategory;
-  userId: string;
-  userName: string;
-  action: string;
-  details: string;
-  ipAddress: string;
-  status: 'SUCCESS' | 'WARNING' | 'ERROR';
-}
-
-export interface BackupEntry {
-  id: string;
-  timestamp: string;
-  sizeMb: number;
-  type: 'AUTOMATIC' | 'MANUAL';
-  status: 'COMPLETED' | 'FAILED' | 'IN_PROGRESS';
-  createdBy: string;
-  fileName: string;
-}
-
-export interface BroadcastMessage {
-  id: string;
+  institutionName: string;
   subject: string;
-  content: string;
-  target: 'ALL' | 'ACTIVE_ONLY' | 'TRIAL_ONLY' | 'SPECIFIC';
+  category: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  createdAt: string;
-  sentBy: string;
-  readCount: number;
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+  slaDeadline: string;
 }
 
-export interface EmailTemplate {
+/* Added FAQItem interface */
+export interface FAQItem {
   id: string;
-  type: 'ACTIVATION' | 'EXPIRED_REMINDER' | 'PASSWORD_RESET' | 'PAYMENT_CONFIRMED';
-  subject: string;
-  body: string;
+  question: string;
+  answer: string;
+  category: string;
+}
+
+/* Added HelpDoc interface */
+export interface HelpDoc {
+  id: string;
+  title: string;
+  type: 'VIDEO' | 'ARTICLE';
+  views: number;
+  category: string;
   lastUpdated: string;
 }
 
-export interface SubscriptionPlan {
-  id: string;
-  name: string;
-  price: number;
-  userLimit: number;
-  sppdLimit: number;
-  approvalLevels: number;
-  storageGb: number;
-  features: string[];
-  durationDays: number;
-  hasCustomTemplates: boolean;
-}
-
-export interface Subscription {
-  id: string;
-  institutionId: string;
-  planId: string;
-  status: SubscriptionStatus;
-  startDate: string;
-  endDate: string;
-  trialStartedAt: string;
-}
-
-export interface Transaction {
-  id: string;
-  institutionId: string;
-  planId: string;
-  amount: number;
-  paymentProofUrl?: string;
-  status: TransactionStatus;
-  createdAt: string;
-  notes?: string;
-}
-
-export interface WorkUnit {
-  id: string;
-  name: string;
-  code: string;
-  headName?: string;
-  employeeCount: number;
-}
-
-export interface Institution {
-  id: string;
-  name: string;
-  code: string;
-  address: string;
-  logoUrl?: string;
-  active: boolean;
-  subscriptionId?: string;
-  // New Fields
-  phone?: string;
-  email?: string;
-  website?: string;
-  letterheadHtml?: string;
-  workUnits?: WorkUnit[];
-}
-
+/* Added SPPDTemplate interface */
 export interface SPPDTemplate {
   id: string;
-  institutionId: string | 'GLOBAL';
+  name: string;
   category: TemplateCategory;
-  name: string;
   description: string;
-  content: string; 
-  headerHtml?: string;
-  footerHtml?: string;
   isDefault: boolean;
-  isLocked: boolean;
+  isLocked?: boolean;
   version: number;
-  isActive: boolean;
-  createdAt: string;
-}
-
-export interface User {
-  id: string;
-  username: string;
-  name: string;
-  role: UserRole;
-  institutionId?: string;
-  position?: string;
-  nip?: string;
-  email: string;
-  workUnitId?: string; 
-  active?: boolean;
-  rankId?: string; // New: Master link
-  positionId?: string; // New: Master link
-}
-
-export interface SPPD {
-  id: string;
-  sppdNumber: string;
-  requesterId: string;
   institutionId: string;
-  purpose: string;
-  departureDate: string;
-  returnDate: string;
-  destination: string;
-  transportation: string;
-  estimatedCost: number;
-  status: SPPDStatus;
-  createdAt: string;
-  logs: ActivityLog[];
-}
-
-export interface ActivityLog {
-  id: string;
-  timestamp: string;
-  userId: string;
-  action: string;
-  notes?: string;
-}
-
-export interface CostStandard {
-  id: string;
-  institutionId: string;
-  destination: string;
-  perDiem: number;
-  lodging: number;
-  transportBase: number;
+  createdAt?: string;
 }

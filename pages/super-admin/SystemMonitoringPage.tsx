@@ -145,7 +145,7 @@ const SystemMonitoringPage: React.FC = () => {
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cloud S3</p>
                 <h4 className="text-lg font-black text-gray-900">42% Capacity</h4>
-                <div className="flex items-center text-[9px] font-bold text-amber-600 mt-1 uppercase">
+                <div className="flex items-center text-[9px] font-bold text-amber-500 mt-1 uppercase">
                    <AlertTriangle size={10} className="mr-1" /> 842 GB Free
                 </div>
               </div>
@@ -272,7 +272,8 @@ const SystemMonitoringPage: React.FC = () => {
                       : 'bg-white text-gray-400 border-gray-100 hover:border-blue-900/20'
                     }`}
                   >
-                    {cat.replace('_', ' ')}
+                    {/* Fix: cast cat as string to access replace method */}
+                    {(cat as string).replace('_', ' ')}
                   </button>
                 ))}
              </div>

@@ -24,7 +24,9 @@ import {
   ShieldCheck,
   PackageCheck,
   UserCheck,
-  Bug
+  Bug,
+  /* Added missing icon import */
+  Clock
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -100,7 +102,7 @@ const SystemMonitoringPage: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Database Cluster</p>
-                <h4 className="text-lg font-black text-gray-900 mt-1">Operational</h4>
+                <h4 className="text-lg font-black text-gray-900">Operational</h4>
                 <div className="mt-1 flex items-center text-[10px] font-bold text-emerald-600">
                   <CheckCircle2 size={12} className="mr-1" /> Healthy
                 </div>
@@ -112,7 +114,7 @@ const SystemMonitoringPage: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">API Service</p>
-                <h4 className="text-lg font-black text-gray-900 mt-1">99.98% Uptime</h4>
+                <h4 className="text-lg font-black text-gray-900">99.98% Uptime</h4>
                 <p className="text-[10px] font-bold text-blue-400 mt-1 uppercase">Load: 24% Avg</p>
               </div>
             </div>
@@ -122,7 +124,7 @@ const SystemMonitoringPage: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Security Filter</p>
-                <h4 className="text-lg font-black text-gray-900 mt-1">WAF Active</h4>
+                <h4 className="text-lg font-black text-gray-900">WAF Active</h4>
                 <p className="text-[10px] font-bold text-indigo-400 mt-1 uppercase">Blocked: 12 (1h)</p>
               </div>
             </div>
@@ -132,7 +134,7 @@ const SystemMonitoringPage: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">S3 Storage</p>
-                <h4 className="text-lg font-black text-gray-900 mt-1">42% Capacity</h4>
+                <h4 className="text-lg font-black text-gray-900">42% Capacity</h4>
                 <p className="text-[10px] font-bold text-amber-500 mt-1 uppercase">842 GB Free</p>
               </div>
             </div>
@@ -255,7 +257,8 @@ const SystemMonitoringPage: React.FC = () => {
                       : 'bg-white text-gray-400 border-gray-100 hover:border-blue-900/20'
                     }`}
                   >
-                    {cat.replace('_', ' ')}
+                    {/* Fix: cast cat as string to access replace method */}
+                    {(cat as string).replace('_', ' ')}
                   </button>
                 ))}
              </div>

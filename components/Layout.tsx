@@ -1,257 +1,408 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import { UserRole } from '../types';
 import { 
   LayoutDashboard, 
-  Building2, 
-  Users, 
-  CreditCard, 
-  FileCode, 
-  Globe, 
-  Activity, 
-  Lock, 
-  Database, 
-  Megaphone, 
+  FileText, 
   Settings, 
-  Target, 
-  LifeBuoy, 
-  User as UserIcon, 
-  LogOut,
-  Menu,
-  Bell,
-  ChevronRight,
-  ShieldCheck,
-  PlusCircle,
-  FileText,
-  Zap,
-  Building,
+  Users, 
+  LogOut, 
+  Menu, 
+  Bell, 
+  User as UserIcon,
   Archive,
-  X,
-  AlertTriangle,
+  Wallet,
+  Layers,
+  BarChart3,
+  ShieldCheck,
+  Building2,
+  Package,
+  Globe,
+  Activity,
+  Lock,
+  Database,
+  Megaphone,
+  Zap,
+  LifeBuoy,
+  ChevronRight,
   ClipboardList,
-  Search,
-  Clock,
   History,
-  FileSearch,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  X,
+  MessageSquare,
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 
-const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean, isOpen: boolean }> = ({ to, icon, label, active, isOpen }) => (
+const SidebarItem: React.FC<{ to: string, icon: any, label: string, active: boolean, isOpen: boolean }> = ({ to, icon: Icon, label, active, isOpen }) => (
   <Link 
     to={to} 
-    className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-      active ? 'bg-white text-blue-900 shadow-lg shadow-black/10' : 'text-blue-100 hover:bg-blue-800/50'
+    className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+      active 
+        ? 'bg-blue-900 text-white shadow-lg shadow-blue-900/30' 
+        : 'text-gray-500 hover:bg-blue-50 hover:text-blue-900'
     }`}
   >
-    <div className={`${active ? 'text-blue-900' : 'text-blue-200'}`}>
-      {icon}
-    </div>
-    {isOpen && <span className="font-bold text-[11px] uppercase tracking-wider leading-none">{label}</span>}
+    <Icon size={20} className={`${active ? 'text-white' : 'text-gray-400 group-hover:text-blue-900'}`} />
+    {isOpen && <span className="font-bold text-sm whitespace-nowrap">{label}</span>}
   </Link>
 );
 
+const SidebarSection: React.FC<{ label: string, isOpen: boolean }> = ({ label, isOpen }) => (
+  isOpen ? (
+    <div className="px-4 mt-6 mb-2">
+      <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{label}</span>
+    </div>
+  ) : (
+    <div className="h-px bg-gray-100 my-4 mx-4"></div>
+  )
+);
+
 const Layout: React.FC = () => {
-  const { user, subscription, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleFinalLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleActualLogout = () => {
     logout();
-    setShowLogoutModal(false);
     navigate('/login');
   };
 
-  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
-  const isAdmin = user?.role === UserRole.ADMIN_INSTANSI;
-  const isOperator = user?.role === UserRole.OPERATOR;
-  const isPejabat = user?.role === UserRole.PEJABAT_PENYETUJU;
-  const isPegawai = user?.role === UserRole.PEGAWAI;
+  // Check for login success on mount
+  useEffect(() => {
+    const justLoggedIn = sessionStorage.getItem('just_logged_in');
+    if (justLoggedIn === 'true') {
+      setShowSuccessToast(true);
+      sessionStorage.removeItem('just_logged_in');
+      const timer = setTimeout(() => setShowSuccessToast(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
-  const renderSuperAdminMenu = () => [
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/super-admin/institusi', icon: <Building2 size={18} />, label: 'Instansi' },
-    { to: '/super-admin/users', icon: <Users size={18} />, label: 'User Global' },
-    { to: '/super-admin/billing', icon: <CreditCard size={18} />, label: 'Subscription & Pembayaran' },
-    { to: '/super-admin/templates', icon: <FileCode size={18} />, label: 'Template Global' },
-    { to: '/super-admin/sbm', icon: <Globe size={18} />, label: 'Standar Biaya' },
-    { to: '/super-admin/monitoring', icon: <Activity size={18} />, label: 'Monitoring & Audit Log' },
-    { to: '/super-admin/security', icon: <Lock size={18} />, label: 'Keamanan' },
-    { to: '/super-admin/backup', icon: <Database size={18} />, label: 'Backup & Maintenance' },
-    { to: '/super-admin/communications', icon: <Megaphone size={18} />, label: 'Notifikasi' },
-    { to: '/super-admin/settings', icon: <Settings size={18} />, label: 'Pengaturan Platform' },
-    { to: '/super-admin/demo', icon: <Target size={18} />, label: 'Demo Mode' },
-    { to: '/super-admin/support', icon: <LifeBuoy size={18} />, label: 'Help & Support' },
-  ];
+  // Close notifications when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const renderAdminInstansiMenu = () => [
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/admin/profile', icon: <Building size={18} />, label: 'Profil Instansi' },
-    { to: '/admin/users', icon: <Users size={18} />, label: 'Pengguna' },
-    { to: '/admin/master-data', icon: <Database size={18} />, label: 'Data Master' },
-    { to: '/admin/sbm', icon: <CreditCard size={18} />, label: 'Standar Biaya' },
-    { to: '/sppd', icon: <FileText size={18} />, label: 'SPPD' },
-    { to: '/admin/reports', icon: <Activity size={18} />, label: 'Laporan' },
-    { to: '/admin/subscription', icon: <Zap size={18} />, label: 'Subscription' },
-    { to: '/admin/config', icon: <Settings size={18} />, label: 'Pengaturan' },
-  ];
+  const isSA = user?.role === UserRole.SUPER_ADMIN;
+  const isAI = user?.role === UserRole.ADMIN_INSTANSI;
+  const isOP = user?.role === UserRole.OPERATOR;
+  const isPJ = user?.role === UserRole.PEJABAT_PENYETUJU;
+  const isPG = user?.role === UserRole.PEGAWAI;
 
-  const renderPejabatMenu = () => [
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/sppd', icon: <ClipboardList size={18} />, label: 'Persetujuan' },
-    { to: '/riwayat-persetujuan', icon: <History size={18} />, label: 'Riwayat' },
-  ];
-
-  const renderOperatorMenu = () => [
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD' },
-    { to: '/monitoring', icon: <Clock size={18} />, label: 'Monitoring Approval' },
-    { to: '/arsip-digital', icon: <Archive size={18} />, label: 'Arsip Digital' },
-  ];
-
-  // Updated menu label based on user request for PEGAWAI
-  const renderPegawaiMenu = () => [
-    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/sppd/baru', icon: <PlusCircle size={18} />, label: 'Ajukan SPPD' },
-    { to: '/sppd', icon: <FileText size={18} />, label: 'SPPD Saya' },
-    { to: '/profile', icon: <UserIcon size={18} />, label: 'Profil Saya' },
-  ];
-
-  const getMenu = () => {
-    if (isSuperAdmin) return renderSuperAdminMenu();
-    if (isAdmin) return renderAdminInstansiMenu();
-    if (isOperator) return renderOperatorMenu();
-    if (isPejabat) return renderPejabatMenu();
-    if (isPegawai) return renderPegawaiMenu();
+  // Mock Notifications Data
+  const getMockNotifications = () => {
+    if (isSA) return [
+      { id: 1, title: 'Pembayaran Baru', desc: 'Dinas Kesehatan Prov. Maluku telah mengunggah bukti bayar paket Enterprise.', time: '5m ago', type: 'billing', icon: Wallet, color: 'text-emerald-500 bg-emerald-50' },
+      { id: 2, title: 'Peringatan Server', desc: 'Penggunaan RAM pada Cluster-01 mencapai 85%.', time: '1h ago', type: 'system', icon: AlertCircle, color: 'text-red-500 bg-red-50' },
+      { id: 3, title: 'Tenant Baru', desc: 'Bappeda Kab. Bogor telah melakukan registrasi trial.', time: '3h ago', type: 'tenant', icon: Building2, color: 'text-blue-500 bg-blue-50' },
+    ];
+    if (isAI) return [
+      { id: 1, title: 'User Registrasi', desc: 'Andi Pratama menunggu verifikasi akun pegawai.', time: '10m ago', type: 'user', icon: Users, color: 'text-blue-500 bg-blue-50' },
+      { id: 2, title: 'Sisa Kuota SPPD', desc: 'Kuota SPPD bulan ini tersisa 12 dari 500.', time: '5h ago', type: 'billing', icon: AlertCircle, color: 'text-amber-500 bg-amber-50' },
+      { id: 3, title: 'Update SBM', desc: 'Super Admin memperbarui Standar Biaya Masukan Nasional 2024.', time: '1d ago', type: 'config', icon: Settings, color: 'text-indigo-500 bg-indigo-50' },
+    ];
     return [
-        { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-        { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD' },
+      { id: 1, title: 'SPPD Disetujui', desc: 'Pengajuan SPPD ke Bandung #042 telah disetujui Kepala Dinas.', time: '2m ago', type: 'status', icon: CheckCircle2, color: 'text-emerald-500 bg-emerald-50' },
+      { id: 2, title: 'Revisi Diperlukan', desc: 'Mohon perbaiki lampiran pada pengajuan SPPD Surabaya.', time: '45m ago', type: 'revision', icon: History, color: 'text-amber-500 bg-amber-50' },
+      { id: 3, title: 'Tugas Baru', desc: 'Anda ditugaskan sebagai pendamping teknis di Jakarta besok.', time: '2h ago', type: 'assignment', icon: ClipboardList, color: 'text-blue-500 bg-blue-50' },
     ];
   };
 
-  const isActive = (path: string) => {
-    if (path === '/dashboard') return location.pathname === '/dashboard';
-    return location.pathname.startsWith(path);
-  };
+  const notifications = getMockNotifications();
 
   return (
-    <div className="min-h-screen flex bg-gray-50 overflow-hidden">
-      <aside className={`${isSidebarOpen ? 'w-72' : 'w-24'} bg-blue-900 text-white transition-all duration-300 flex flex-col shadow-2xl z-30`}>
-        <div className="p-6 flex items-center justify-between border-b border-blue-800 h-20">
-          {isSidebarOpen ? (
-            <Link to="/dashboard" className="text-xl font-black tracking-tighter flex items-center">
-              <div className="w-8 h-8 bg-white text-blue-900 rounded-lg flex items-center justify-center mr-3 font-black shadow-lg">E</div>
-              E-SIMPerDin <span className="ml-1 text-[10px] text-blue-400 font-bold uppercase">Pro</span>
-            </Link>
-          ) : (
-            <Link to="/dashboard" className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-900 font-black shadow-xl mx-auto">E</Link>
-          )}
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Login Success Toast */}
+      {showSuccessToast && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] flex items-center bg-white/80 backdrop-blur-xl border border-emerald-100 px-6 py-4 rounded-[2rem] shadow-2xl shadow-emerald-500/10 animate-in slide-in-from-top-8 duration-500">
+           <div className="w-10 h-10 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-emerald-500/20">
+              <CheckCircle2 size={20} />
+           </div>
+           <div>
+              <p className="text-sm font-black text-gray-900 leading-none">Login Berhasil!</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1.5 flex items-center">
+                 Selamat Datang, {user?.name} <Sparkles size={10} className="ml-1 text-amber-500" />
+              </p>
+           </div>
+           <button 
+             onClick={() => setShowSuccessToast(false)}
+             className="ml-6 p-2 hover:bg-emerald-50 rounded-xl text-gray-400 transition-all"
+           >
+              <X size={16} />
+           </button>
         </div>
-
-        <nav className="flex-1 p-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar">
-          {getMenu().map((item, idx) => (
-            <SidebarItem 
-              key={idx} 
-              to={item.to} 
-              icon={item.icon} 
-              label={item.label} 
-              active={isActive(item.to)} 
-              isOpen={isSidebarOpen}
-            />
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-blue-800 space-y-1">
-          {/* For non-pegawai, Profile is still at the bottom, for Pegawai it's in the list above per request */}
-          {!isPegawai && (
-            <SidebarItem to="/profile" icon={<UserIcon size={18} />} label="Profil Saya" active={isActive('/profile')} isOpen={isSidebarOpen} />
-          )}
-          <button 
-            onClick={() => setShowLogoutModal(true)} 
-            className="flex items-center space-x-3 px-4 py-3 w-full text-red-300 hover:text-white hover:bg-red-600/30 rounded-xl transition-all font-bold group"
-          >
-            <LogOut size={18} className="group-hover:rotate-12 transition-transform" />
-            {isSidebarOpen && <span className="text-[11px] uppercase tracking-wider">Logout</span>}
-          </button>
-        </div>
-      </aside>
-
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 z-20 shadow-sm">
-          <div className="flex items-center space-x-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl border border-gray-100 transition-all shadow-sm"><Menu size={20} /></button>
-            <div className="hidden md:block">
-               <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Environment</span>
-               <div className="flex items-center space-x-2 mt-0.5">
-                  <div className={`w-2 h-2 rounded-full ${isSuperAdmin ? 'bg-indigo-600 animate-pulse' : 'bg-emerald-50'}`}></div>
-                  <span className="text-[11px] font-black uppercase text-blue-900 tracking-tighter">{isSuperAdmin ? 'Platform Authority' : subscription?.status || 'Active Tenant'}</span>
-               </div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-5">
-            <div className="hidden sm:flex items-center space-x-2 bg-gray-50 border border-gray-100 px-4 py-2 rounded-2xl">
-               <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">System Online</span>
-            </div>
-            <button className="p-2.5 text-gray-400 hover:text-blue-900 transition-colors relative bg-white border border-gray-100 rounded-xl shadow-sm">
-               <Bell size={20} />
-               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <div className="w-px h-8 bg-gray-100"></div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-black text-gray-900 leading-none">{user?.name}</p>
-                <p className="text-[9px] text-blue-600 uppercase font-black mt-1.5 tracking-[0.1em]">{user?.role.replace('_', ' ')}</p>
-              </div>
-              <div className="w-11 h-11 bg-gradient-to-br from-blue-900 to-indigo-800 text-white rounded-2xl flex items-center justify-center font-black shadow-xl shadow-blue-900/10 border-2 border-white ring-1 ring-gray-100">{user?.name.charAt(0)}</div>
-            </div>
-          </div>
-        </header>
-        <div className="flex-1 overflow-y-auto p-8 bg-gray-50/50 custom-scrollbar">
-          <div className="max-w-7xl mx-auto h-full"><Outlet /></div>
-        </div>
-      </main>
+      )}
 
       {/* Logout Confirmation Modal */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-blue-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in duration-300">
-            <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
-                <LogOut size={40} className="ml-1.5" />
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-blue-900/40 backdrop-blur-sm flex items-center justify-center z-[200] p-6">
+          <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+            <div className="p-10 text-center">
+              <div className="w-20 h-20 bg-red-50 text-red-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <AlertTriangle size={40} />
               </div>
               <h4 className="text-2xl font-black text-gray-900 tracking-tight">Konfirmasi Keluar</h4>
-              <p className="text-gray-500 text-sm mt-3 leading-relaxed font-medium">
-                Apakah Anda yakin ingin mengakhiri sesi ini? Pastikan seluruh data penginputan Anda telah tersimpan ke server.
+              <p className="text-gray-500 text-sm mt-3 font-medium leading-relaxed italic">
+                Apakah Anda yakin ingin mengakhiri sesi kerja Anda saat ini?
               </p>
               
-              <div className="mt-8 flex flex-col gap-3">
+              <div className="mt-10 space-y-3">
                 <button 
-                  onClick={handleFinalLogout}
+                  onClick={handleActualLogout}
                   className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-600/20 flex items-center justify-center space-x-2"
                 >
-                  <ShieldCheck size={18} />
-                  <span>Ya, Keluar Sekarang</span>
+                  <LogOut size={16} />
+                  <span>Ya, Keluar Sistem</span>
                 </button>
                 <button 
-                  onClick={() => setShowLogoutModal(false)}
-                  className="w-full py-4 bg-gray-50 text-gray-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all border border-gray-100"
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="w-full py-4 bg-gray-100 text-gray-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all"
                 >
                   Batalkan
                 </button>
               </div>
             </div>
-            <div className="bg-gray-50 px-8 py-4 border-t border-gray-100 flex items-center justify-center space-x-2">
-              <AlertTriangle size={14} className="text-amber-500" />
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Sesi Anda akan dihapus secara permanen dari perangkat ini.</span>
+            <div className="px-10 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-center">
+              <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Secure Session Management</span>
             </div>
           </div>
         </div>
       )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`${isSidebarOpen ? 'w-72' : 'w-24'} bg-white border-r border-gray-100 transition-all duration-300 flex flex-col z-30 shadow-sm`}
+      >
+        <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center space-x-3 overflow-hidden">
+            <div className="w-10 h-10 bg-blue-900 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-xl shadow-blue-900/20 shrink-0">
+              E
+            </div>
+            {isSidebarOpen && (
+              <div className="flex flex-col">
+                <span className="text-lg font-black text-blue-900 leading-none tracking-tight">SIMPerDin</span>
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Enterprise 2.5</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <nav className="flex-1 px-3 space-y-1 mt-4 overflow-y-auto custom-scrollbar pb-10">
+          <SidebarItem 
+            to="/dashboard" 
+            icon={LayoutDashboard} 
+            label="Dashboard" 
+            active={location.pathname === '/dashboard'} 
+            isOpen={isSidebarOpen}
+          />
+
+          <SidebarSection label="Operasional" isOpen={isSidebarOpen} />
+          <SidebarItem 
+            to="/sppd" 
+            icon={FileText} 
+            label={isPG ? "SPPD Saya" : "Daftar SPPD"} 
+            active={location.pathname === '/sppd'} 
+            isOpen={isSidebarOpen}
+          />
+          {(isOP || isAI || isPG) && (
+            <SidebarItem 
+              to="/sppd/baru" 
+              icon={Zap} 
+              label="Buat SPPD Baru" 
+              active={location.pathname === '/sppd/baru'} 
+              isOpen={isSidebarOpen}
+            />
+          )}
+          {(isOP || isAI) && (
+            <SidebarItem 
+              to="/sppd/monitoring" 
+              icon={Activity} 
+              label="Monitoring" 
+              active={location.pathname === '/sppd/monitoring'} 
+              isOpen={isSidebarOpen}
+            />
+          )}
+          {isPJ && (
+            <SidebarItem 
+              to="/sppd/history" 
+              icon={History} 
+              label="Riwayat Otoritas" 
+              active={location.pathname === '/sppd/history'} 
+              isOpen={isSidebarOpen}
+            />
+          )}
+          <SidebarItem 
+            to="/arsip-digital" 
+            icon={Archive} 
+            label="Arsip Digital" 
+            active={location.pathname === '/arsip-digital'} 
+            isOpen={isSidebarOpen}
+          />
+
+          {isAI && (
+            <>
+              <SidebarSection label="Manajemen Unit" isOpen={isSidebarOpen} />
+              <SidebarItem to="/admin/users" icon={Users} label="SDM & Pegawai" active={location.pathname === '/admin/users'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/admin/master-data" icon={Layers} label="Data Master" active={location.pathname === '/admin/master-data'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/admin/sbm" icon={Wallet} label="Standar Biaya" active={location.pathname === '/admin/sbm'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/admin/templates" icon={ClipboardList} label="Template Dinas" active={location.pathname.startsWith('/admin/templates')} isOpen={isSidebarOpen} />
+              <SidebarItem to="/admin/reports" icon={BarChart3} label="Rekapitulasi" active={location.pathname === '/admin/reports'} isOpen={isSidebarOpen} />
+              
+              <SidebarSection label="Konfigurasi" isOpen={isSidebarOpen} />
+              <SidebarItem to="/admin/profile" icon={Building2} label="Profil Instansi" active={location.pathname === '/admin/profile'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/admin/config" icon={Settings} label="Alur Kerja" active={location.pathname === '/admin/config'} isOpen={isSidebarOpen} />
+            </>
+          )}
+
+          {isSA && (
+            <>
+              <SidebarSection label="Ekosistem Platform" isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/tenants" icon={Globe} label="Manajemen Tenant" active={location.pathname === '/super/tenants'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/billing" icon={Package} label="Billing & Paket" active={location.pathname === '/super/billing'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/sbm" icon={ShieldCheck} label="Master SBM Global" active={location.pathname === '/super/sbm'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/templates" icon={ClipboardList} label="Template Global" active={location.pathname === '/super/templates'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/demo" icon={Zap} label="Demo Suites" active={location.pathname === '/super/demo'} isOpen={isSidebarOpen} />
+              
+              <SidebarSection label="Infrastruktur" isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/monitoring" icon={Activity} label="Health Monitor" active={location.pathname === '/super/monitoring'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/security" icon={Lock} label="Security Engine" active={location.pathname === '/super/security'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/backup" icon={Database} label="Backup & Recovery" active={location.pathname === '/super/backup'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/communication" icon={Megaphone} label="Notifikasi Global" active={location.pathname === '/super/communication'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/support" icon={LifeBuoy} label="Support Center" active={location.pathname === '/super/support'} isOpen={isSidebarOpen} />
+              <SidebarItem to="/super/settings" icon={Settings} label="System Config" active={location.pathname === '/super/settings'} isOpen={isSidebarOpen} />
+            </>
+          )}
+        </nav>
+
+        <div className="p-4 border-t border-gray-100">
+          <div className={`mb-4 transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
+             <Link to="/profile" className="flex items-center space-x-3 p-3 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-900/20 transition-all group">
+                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center font-bold text-blue-900 border border-gray-100 group-hover:bg-blue-900 group-hover:text-white transition-colors">
+                   {user?.name.charAt(0)}
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-xs font-black text-gray-900 truncate max-w-[120px]">{user?.name}</span>
+                   <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Lihat Profil</span>
+                </div>
+             </Link>
+          </div>
+          <button 
+            onClick={handleLogoutClick}
+            className="flex items-center space-x-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 rounded-xl transition-all font-black text-sm group"
+          >
+            <LogOut size={20} className="group-hover:scale-110 transition-transform" />
+            {isSidebarOpen && <span>Keluar Sistem</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-20">
+          <div className="flex items-center space-x-4">
+             <button 
+               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+               className="p-3 text-gray-400 hover:bg-gray-100 rounded-2xl transition-all shadow-sm border border-transparent hover:border-gray-100"
+             >
+               <Menu size={22} />
+             </button>
+             <div className="hidden md:flex items-center space-x-2 text-xs font-bold text-gray-400">
+                <span>E-SIMPerDin</span>
+                <ChevronRight size={12} />
+                <span className="text-blue-900 capitalize font-black">{location.pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}</span>
+             </div>
+          </div>
+
+          <div className="flex items-center space-x-6">
+            <div className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+               <ShieldCheck size={14} />
+               <span className="text-[10px] font-black uppercase tracking-widest">Secure Session</span>
+            </div>
+
+            <div className="flex items-center space-x-3 relative" ref={notificationRef}>
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`p-3 relative bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100 ${showNotifications ? 'text-blue-900 bg-blue-50 ring-2 ring-blue-900/10' : 'text-gray-400 hover:text-blue-900'}`}
+              >
+                <Bell size={20} />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              </button>
+
+              {/* Notification Pop-up */}
+              {showNotifications && (
+                <div className="absolute top-full right-0 mt-4 w-[380px] bg-white rounded-[2rem] shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <div>
+                      <h4 className="text-lg font-black text-gray-900 leading-none">Notifikasi</h4>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">Pembaruan Aktivitas Sistem</p>
+                    </div>
+                    <button className="text-[10px] font-black text-blue-900 uppercase hover:underline">Tandai Dibaca</button>
+                  </div>
+
+                  <div className="max-h-[400px] overflow-y-auto custom-scrollbar divide-y divide-gray-50">
+                    {notifications.map((notif) => (
+                      <div key={notif.id} className="p-5 hover:bg-gray-50 transition-colors cursor-pointer group">
+                        <div className="flex items-start space-x-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${notif.color}`}>
+                            <notif.icon size={18} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start mb-1">
+                              <h5 className="text-sm font-black text-gray-900 group-hover:text-blue-900 transition-colors truncate">{notif.title}</h5>
+                              <span className="text-[9px] font-bold text-gray-400 whitespace-nowrap ml-2 uppercase">{notif.time}</span>
+                            </div>
+                            <p className="text-xs text-gray-500 leading-relaxed font-medium line-clamp-2">{notif.desc}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
+                    <button className="text-[10px] font-black text-blue-900 uppercase tracking-widest flex items-center justify-center w-full hover:underline">
+                      Lihat Semua Notifikasi <ChevronRight size={14} className="ml-1" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="w-px h-8 bg-gray-100 mx-2"></div>
+              <div className="flex items-center space-x-4 pl-2">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-black text-gray-900 leading-none">{user?.name}</p>
+                  <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest mt-1.5">{user?.role.replace('_', ' ')}</p>
+                </div>
+                <Link to="/profile" className="w-12 h-12 bg-gradient-to-br from-blue-900 to-indigo-950 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-blue-900/20 hover:scale-105 transition-transform border-2 border-white">
+                  {user?.name.charAt(0)}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 };

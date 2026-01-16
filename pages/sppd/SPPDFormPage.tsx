@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../App';
-import { SubscriptionStatus, UserRole, TemplateCategory } from '../../types';
+import { SubscriptionStatus, UserRole, TemplateCategory, SPPDStatus } from '../../types';
 import { MOCK_USERS, MOCK_TEMPLATES } from '../../constants';
 import { GoogleGenAI } from "@google/genai";
 import { 
@@ -46,7 +46,6 @@ const SPPDFormPage: React.FC = () => {
   const isOperator = user?.role === UserRole.OPERATOR;
   const isPegawai = user?.role === UserRole.PEGAWAI;
 
-  // Filter pegawai hanya yang satu instansi dengan user login
   const myInstitutionUsers = MOCK_USERS.filter(u => u.institutionId === user?.institutionId);
   const availableTemplates = MOCK_TEMPLATES.filter(t => 
     t.category === TemplateCategory.SPPD && 
@@ -69,6 +68,31 @@ const SPPDFormPage: React.FC = () => {
   const [isCalculating, setIsCalculating] = useState(false);
   const [isAiDrafting, setIsAiDrafting] = useState(false);
   const isExpired = subscription?.status === SubscriptionStatus.EXPIRED;
+
+  // Load data if in Edit Mode (CRUD: Read for Update)
+  useEffect(() => {
+    if (isEdit && id) {
+      // Simulation of fetching data from mock state
+      // In a real app, this would be an API call
+      const mockData = [
+        { id: '3', employeeId: 'u-5', purpose: 'Survey Lokasi Halte Trans Metro', destination: 'Yogyakarta', departureDate: '2024-05-25', returnDate: '2024-05-27', transportation: 'Bus Umum', estimatedCost: 1800000 },
+        { id: '4', employeeId: 'u-5', purpose: 'Rapat Koordinasi Lintas Sektoral', destination: 'Medan', departureDate: '2024-06-01', returnDate: '2024-06-03', transportation: 'Pesawat Terbang', estimatedCost: 5500000 },
+      ].find(s => s.id === id);
+
+      if (mockData) {
+        setFormData(prev => ({
+          ...prev,
+          employeeId: mockData.employeeId,
+          purpose: mockData.purpose,
+          destination: mockData.destination,
+          departureDate: mockData.departureDate,
+          returnDate: mockData.returnDate,
+          transportation: mockData.transportation,
+          estimatedCost: mockData.estimatedCost
+        }));
+      }
+    }
+  }, [isEdit, id]);
 
   const handleAiDraft = async () => {
     if (!formData.purpose || formData.purpose.length < 5) {
@@ -117,10 +141,12 @@ const SPPDFormPage: React.FC = () => {
     setIsCalculating(true);
     // Simulasi integrasi SBM API
     setTimeout(() => {
-      setFormData(prev => ({ ...prev, estimatedCost: 3450000 }));
+      // Logika simulasi: Biaya berbeda jika Medan (Luar Jawa)
+      const baseCost = formData.destination.toLowerCase() === 'medan' ? 5500000 : 2500000;
+      setFormData(prev => ({ ...prev, estimatedCost: baseCost }));
       setIsCalculating(false);
       alert('Biaya berhasil dikalkulasi otomatis berdasarkan Standar Biaya Masukan terbaru.');
-    }, 1500);
+    }, 1200);
   };
 
   const handleSubmit = (e: React.FormEvent, status: 'DRAFT' | 'SUBMIT') => {
@@ -129,14 +155,15 @@ const SPPDFormPage: React.FC = () => {
 
     if (status === 'SUBMIT') {
       if (!formData.employeeId) { alert('Harap pilih pegawai pelaksana tugas.'); return; }
-      if (!formData.purpose) { alert('Harap isi maksud perjalanan dinas.'); return; }
+      if (!formData.purpose || formData.purpose.length < 10) { alert('Harap isi maksud perjalanan dinas dengan jelas.'); return; }
       if (!formData.destination) { alert('Harap isi tujuan perjalanan.'); return; }
       if (!formData.departureDate) { alert('Harap pilih tanggal keberangkatan.'); return; }
     }
 
     const msg = status === 'DRAFT' 
-      ? 'Dokumen SPPD berhasil disimpan sebagai draft.' 
-      : 'Pengajuan SPPD telah dikirimkan ke meja Pimpinan untuk persetujuan.';
+      ? `Data SPPD #${id || 'BARU'} berhasil disimpan sebagai draft.` 
+      : `Pengajuan SPPD #${id || 'BARU'} telah dikirimkan ke meja Pimpinan untuk persetujuan.`;
+    
     alert(msg);
     navigate('/sppd');
   };
@@ -186,7 +213,7 @@ const SPPDFormPage: React.FC = () => {
                <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pelaksana Tugas (Pegawai)</label>
                   {isPegawai ? (
-                    <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-900 flex items-center space-x-3">
+                    <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-900 flex items-center space-x-3 shadow-inner">
                        <CheckCircle2 size={18} className="text-blue-600" />
                        <span>{user?.name} - {user?.nip || 'NIP N/A'}</span>
                     </div>
@@ -205,21 +232,22 @@ const SPPDFormPage: React.FC = () => {
                        </select>
                     </div>
                   )}
+                  <p className="text-[8px] text-gray-400 font-bold uppercase ml-2 italic">Pegawai hanya dapat mengajukan perjalanan untuk diri sendiri.</p>
                </div>
                <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Alat Angkutan</label>
                   <div className="relative">
                     <Plane size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
                     <select 
-                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold appearance-none cursor-pointer"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold appearance-none cursor-pointer focus:ring-2 focus:ring-blue-900/10"
                       value={formData.transportation}
                       onChange={(e) => setFormData({...formData, transportation: e.target.value})}
                     >
-                      <option>Pesawat Terbang</option>
-                      <option>Kereta Api</option>
-                      <option>Mobil Dinas (Operasional)</option>
-                      <option>Bus Umum / Travel</option>
-                      <option>Kapal Laut</option>
+                      <option value="Pesawat Terbang">Pesawat Terbang</option>
+                      <option value="Kereta Api">Kereta Api</option>
+                      <option value="Mobil Dinas (Operasional)">Mobil Dinas (Operasional)</option>
+                      <option value="Bus Umum / Travel">Bus Umum / Travel</option>
+                      <option value="Kapal Laut">Kapal Laut</option>
                     </select>
                   </div>
                </div>
@@ -253,11 +281,10 @@ const SPPDFormPage: React.FC = () => {
                   <textarea 
                     rows={2} 
                     className="w-full px-6 py-5 bg-gray-50 border border-gray-100 rounded-[2rem] outline-none focus:ring-2 focus:ring-blue-900/10 font-medium text-gray-700 resize-none shadow-inner"
-                    placeholder="Contoh: Menghadiri rapat kordinasi teknis di Jakarta..."
+                    placeholder="Masukkan maksud penugasan Anda..."
                     value={formData.purpose}
                     onChange={(e) => setFormData({...formData, purpose: e.target.value})}
                   />
-                  <p className="text-[9px] text-gray-400 font-bold uppercase ml-2 leading-none mt-1">AI Tips: Masukkan poin singkat, biarkan sistem merapikan bahasanya.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -267,8 +294,8 @@ const SPPDFormPage: React.FC = () => {
                        <Globe size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
                        <input 
                         type="text" 
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold" 
-                        placeholder="E.g. Semarang" 
+                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-900/10" 
+                        placeholder="E.g. Yogyakarta" 
                         value={formData.destination} 
                         onChange={(e) => setFormData({...formData, destination: e.target.value})} 
                       />
@@ -276,11 +303,11 @@ const SPPDFormPage: React.FC = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tgl Berangkat</label>
-                    <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold" value={formData.departureDate} onChange={(e) => setFormData({...formData, departureDate: e.target.value})} />
+                    <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-900/10" value={formData.departureDate} onChange={(e) => setFormData({...formData, departureDate: e.target.value})} />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tgl Kembali</label>
-                    <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold" value={formData.returnDate} onChange={(e) => setFormData({...formData, returnDate: e.target.value})} />
+                    <input type="date" className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-blue-900/10" value={formData.returnDate} onChange={(e) => setFormData({...formData, returnDate: e.target.value})} />
                   </div>
                 </div>
               </div>
@@ -304,7 +331,7 @@ const SPPDFormPage: React.FC = () => {
                       <Upload size={24} className="text-gray-300 group-hover:text-blue-900" />
                     </div>
                     <p className="text-[10px] font-black text-gray-400 group-hover:text-gray-600 uppercase tracking-widest">Klik atau Tarik Berkas ke Sini</p>
-                    <p className="text-[9px] text-gray-300 mt-2 font-bold uppercase tracking-tighter">PDF / JPG / PNG (Max 5MB)</p>
+                    <p className="text-[9px] text-gray-300 mt-2 font-bold uppercase tracking-tighter">Undangan / ST / Nota Dinas (Max 5MB)</p>
                   </div>
                   <input type="file" className="hidden" multiple onChange={handleFileChange} />
                 </label>
@@ -361,7 +388,7 @@ const SPPDFormPage: React.FC = () => {
             </div>
             
             <p className="text-[10px] text-gray-400 text-center font-medium italic">
-              *Dokumen akan diteruskan ke antrean approval pimpinan untuk diverifikasi.
+               *Pastikan seluruh data sudah benar sebelum mengirim ke antrean pimpinan.
             </p>
           </div>
 
@@ -369,7 +396,7 @@ const SPPDFormPage: React.FC = () => {
           <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm space-y-6">
             <div className="flex items-center justify-between ml-1">
               <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center">
-                <FileCode size={16} className="mr-2" /> Template SPPD
+                <FileCode size={16} className="mr-2" /> Format Dokumen
               </h5>
             </div>
             
@@ -399,7 +426,7 @@ const SPPDFormPage: React.FC = () => {
           <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center ml-1">
-                <Calculator size={14} className="mr-2" /> Kalkulasi Biaya (SBM)
+                <Calculator size={14} className="mr-2" /> Kalkulasi Plafon (SBM)
               </h5>
               <button 
                 onClick={calculateCost}
@@ -411,12 +438,12 @@ const SPPDFormPage: React.FC = () => {
             </div>
             
             <div className="text-center p-10 bg-gray-50 rounded-[2.5rem] border border-gray-100 relative group overflow-hidden shadow-inner">
-               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Estimasi Plafon (DIPA)</p>
+               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Estimasi Pagu Biaya</p>
                <h4 className="text-3xl font-black text-gray-900 tracking-tight">Rp {formData.estimatedCost.toLocaleString('id-ID')}</h4>
                
                <div className="mt-6 flex items-center justify-center space-x-2 py-2 px-4 bg-amber-50 rounded-xl border border-amber-100 text-amber-700">
                   <Lock size={12} className="shrink-0" />
-                  <span className="text-[9px] font-black uppercase tracking-tighter">Fixed SBM Policy Active</span>
+                  <span className="text-[9px] font-black uppercase tracking-tighter">SBM Policy Enabled</span>
                </div>
                
                <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:scale-110 transition-transform">
@@ -427,7 +454,7 @@ const SPPDFormPage: React.FC = () => {
             <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-start space-x-3">
                <Info size={16} className="text-blue-900 shrink-0 mt-0.5" />
                <p className="text-[9px] text-blue-900 font-bold uppercase leading-relaxed tracking-tight">
-                  Biaya dihitung otomatis berdasarkan Jabatan Pegawai dan Kota Tujuan sesuai Peraturan SBM Instansi.
+                  Perhitungan didasarkan pada Jabatan Anda dan standar biaya wilayah tujuan sesuai regulasi instansi.
                </p>
             </div>
           </div>
@@ -435,9 +462,9 @@ const SPPDFormPage: React.FC = () => {
           <div className="p-10 bg-indigo-900 text-white rounded-[3rem] shadow-2xl relative overflow-hidden group">
              <div className="relative z-10">
                 <ShieldCheck size={40} className="text-amber-400 mb-8" />
-                <h4 className="text-xl font-black mb-2 tracking-tight">Security Checksum</h4>
+                <h4 className="text-xl font-black mb-2 tracking-tight">Security Hash Protection</h4>
                 <p className="text-blue-200 text-[10px] font-bold uppercase leading-relaxed tracking-tight opacity-80">
-                  Dokumen ini akan mendapatkan digital fingerprint unik saat disetujui pimpinan guna menjamin keaslian data arsip.
+                  Seluruh data pengajuan ini dilindungi oleh enkripsi AES-256 dan hanya dapat diakses oleh Anda, Admin, dan Penyetuju terkait.
                 </p>
              </div>
              <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>

@@ -40,6 +40,8 @@ import InstitutionConfigPage from './pages/admin-instansi/InstitutionConfigPage'
 import MasterDataPage from './pages/admin-instansi/MasterDataPage';
 import ReportsPage from './pages/admin-instansi/ReportsPage';
 import MySubscriptionPage from './pages/admin-instansi/MySubscriptionPage';
+import CostStandardsPageAdmin from './pages/admin-instansi/CostStandardsPage';
+import TemplateManagementPageAdmin from './pages/admin-instansi/TemplateManagementPage';
 
 // Landing Detail Pages
 import FeaturesPage from './pages/details/FeaturesPage';
@@ -100,7 +102,7 @@ const App: React.FC = () => {
     localStorage.removeItem('simperdin_user');
   };
 
-  if (loading) return <div className="flex h-screen items-center justify-center font-bold text-blue-900">E-SIMPerDin Engine Loading...</div>;
+  if (loading) return <div className="flex h-screen items-center justify-center font-bold text-blue-900 uppercase tracking-widest animate-pulse">E-SIMPerDin Engine Loading...</div>;
 
   return (
     <AuthContext.Provider value={{ user, subscription, login, logout }}>
@@ -127,7 +129,7 @@ const App: React.FC = () => {
             <Route path="/riwayat-persetujuan" element={<ApprovalHistoryPage />} />
             <Route path="/arsip-digital" element={<DigitalArchivePage />} />
 
-            {/* SUPER ADMIN MODULES (FINAL MAPPING) */}
+            {/* SUPER ADMIN MODULES */}
             {user?.role === UserRole.SUPER_ADMIN && (
               <>
                 <Route path="/super-admin/institusi" element={<InstitutionManagementPage />} />
@@ -152,9 +154,9 @@ const App: React.FC = () => {
                 <Route path="/admin/config" element={<InstitutionConfigPage />} />
                 <Route path="/admin/master-data" element={<MasterDataPage />} />
                 <Route path="/admin/reports" element={<ReportsPage />} />
-                <Route path="/admin/sbm" element={<Navigate to="/dashboard" />} /> 
+                <Route path="/admin/sbm" element={<CostStandardsPageAdmin />} /> 
                 <Route path="/admin/subscription" element={<MySubscriptionPage />} />
-                <Route path="/admin/templates" element={<Navigate to="/dashboard" />} /> 
+                <Route path="/admin/templates" element={<TemplateManagementPageAdmin />} /> 
                 <Route path="/admin/users" element={<UserManagementPageShared />} />
               </>
             )}

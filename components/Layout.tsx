@@ -29,7 +29,12 @@ import {
   Building,
   Archive,
   X,
-  AlertTriangle
+  AlertTriangle,
+  ClipboardList,
+  Search,
+  Clock,
+  History,
+  FileSearch
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean, isOpen: boolean }> = ({ to, icon, label, active, isOpen }) => (
@@ -61,6 +66,7 @@ const Layout: React.FC = () => {
 
   const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
   const isAdmin = user?.role === UserRole.ADMIN_INSTANSI;
+  const isOperator = user?.role === UserRole.OPERATOR;
   const isPegawai = user?.role === UserRole.PEGAWAI;
 
   const renderSuperAdminMenu = () => [
@@ -81,14 +87,21 @@ const Layout: React.FC = () => {
 
   const renderAdminInstansiMenu = () => [
     { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { to: '/admin/profile', icon: <Building size={18} />, label: 'Profil Lembaga' },
-    { to: '/admin/users', icon: <Users size={18} />, label: 'Pegawai & Akses' },
-    { to: '/admin/master-data', icon: <Database size={18} />, label: 'Master Data' },
-    { to: '/admin/sbm', icon: <CreditCard size={18} />, label: 'SBM Unit' },
-    { to: '/admin/templates', icon: <FileCode size={18} />, label: 'Template Surat' },
-    { to: '/admin/reports', icon: <Activity size={18} />, label: 'Laporan Internal' },
-    { to: '/admin/config', icon: <Settings size={18} />, label: 'Konfigurasi' },
-    { to: '/admin/subscription', icon: <Zap size={18} />, label: 'Langganan' },
+    { to: '/admin/profile', icon: <Building size={18} />, label: 'Profil Instansi' },
+    { to: '/admin/users', icon: <Users size={18} />, label: 'Pengguna' },
+    { to: '/admin/master-data', icon: <Database size={18} />, label: 'Data Master' },
+    { to: '/admin/sbm', icon: <CreditCard size={18} />, label: 'Standar Biaya' },
+    { to: '/sppd', icon: <FileText size={18} />, label: 'SPPD' },
+    { to: '/admin/reports', icon: <Activity size={18} />, label: 'Laporan' },
+    { to: '/admin/subscription', icon: <Zap size={18} />, label: 'Subscription' },
+    { to: '/admin/config', icon: <Settings size={18} />, label: 'Pengaturan' },
+  ];
+
+  const renderOperatorMenu = () => [
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+    { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD' },
+    { to: '/monitoring', icon: <Clock size={18} />, label: 'Monitoring Approval' },
+    { to: '/arsip-digital', icon: <Archive size={18} />, label: 'Arsip Digital' },
   ];
 
   const renderPegawaiMenu = () => [
@@ -101,6 +114,7 @@ const Layout: React.FC = () => {
   const getMenu = () => {
     if (isSuperAdmin) return renderSuperAdminMenu();
     if (isAdmin) return renderAdminInstansiMenu();
+    if (isOperator) return renderOperatorMenu();
     if (isPegawai) return renderPegawaiMenu();
     return [
         { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },

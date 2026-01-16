@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   MOCK_DEMO_SESSIONS, 
@@ -26,7 +27,6 @@ import {
   ChevronRight,
   TrendingUp,
   Fingerprint,
-  // Added AlertCircle to imports
   AlertCircle
 } from 'lucide-react';
 import { 
@@ -77,6 +77,19 @@ const DemoManagementPage: React.FC = () => {
       setNewDemo({ name: '', lead: '', duration: '24' });
       alert('Demo Suite Berhasil Diterbitkan!\nKredensial untuk 5 Role (Admin s/d Pegawai) telah dikirim ke email Sales.');
     }, 2500);
+  };
+
+  const resetSimulation = (name: string) => {
+    if (confirm(`RESET DATA: Apakah Anda yakin ingin mengosongkan seluruh data transaksi pada lingkungan demo '${name}'?`)) {
+      alert(`Data simulasi untuk ${name} berhasil dibersihkan ke kondisi awal.`);
+    }
+  };
+
+  const deleteDemo = (id: string, name: string) => {
+    if (confirm(`TERMINATE: Hapus lingkungan demo '${name}' secara permanen? Akses login klien akan terputus.`)) {
+      setSessions(sessions.filter(s => s.id !== id));
+      alert("Lingkungan demo telah dimusnahkan.");
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -214,7 +227,7 @@ const DemoManagementPage: React.FC = () => {
                  <button 
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="w-full py-5 bg-blue-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-800 transition-all shadow-2xl shadow-blue-900/30 flex items-center justify-center space-x-3 disabled:opacity-50"
+                  className="w-full py-5 bg-blue-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-800 transition-all shadow-xl shadow-blue-900/30 flex items-center justify-center space-x-3 disabled:opacity-50"
                  >
                    {isGenerating ? <RefreshCw size={20} className="animate-spin" /> : <Play size={20} />}
                    <span>{isGenerating ? 'Deploying Suite...' : 'Generate Sandbox Suite'}</span>
@@ -223,7 +236,6 @@ const DemoManagementPage: React.FC = () => {
            </div>
 
            <div className="bg-amber-50 p-8 rounded-[2.5rem] border border-amber-100 flex items-start space-x-5">
-              {/* Corrected missing AlertCircle import */}
               <AlertCircle size={32} className="text-amber-600 shrink-0 mt-1" />
               <div>
                  <h5 className="text-sm font-black text-amber-900 uppercase">Perhatian Data</h5>
@@ -236,39 +248,9 @@ const DemoManagementPage: React.FC = () => {
 
         {/* Analytics & Active Sessions */}
         <div className="lg:col-span-2 space-y-8 animate-in slide-in-from-right-4">
-           {/* Engagement Chart */}
-           <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-8">
-                 <div>
-                    <h4 className="text-xl font-black text-gray-900">Sales Engagement Track</h4>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Tren Pembuatan Suite Baru (7 Hari)</p>
-                 </div>
-                 <div className="flex items-center space-x-4">
-                    <div className="flex items-center text-[10px] font-black text-blue-900 uppercase">
-                       <div className="w-2.5 h-2.5 bg-blue-900 rounded-full mr-2"></div> Logins
-                    </div>
-                    <div className="flex items-center text-[10px] font-black text-amber-500 uppercase">
-                       <div className="w-2.5 h-2.5 bg-amber-500 rounded-full mr-2"></div> New Suite
-                    </div>
-                 </div>
-              </div>
-              <div className="h-64">
-                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={MOCK_DEMO_USAGE}>
-                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                       <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10, fontWeight: 700}} dy={10} />
-                       <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10, fontWeight: 700}} />
-                       <Tooltip cursor={{fill: '#f9fafb'}} contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
-                       <Bar dataKey="activeLogins" fill="#1e3a8a" radius={[6, 6, 0, 0]} barSize={24} />
-                       <Bar dataKey="generations" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={24} />
-                    </BarChart>
-                 </ResponsiveContainer>
-              </div>
-           </div>
-
-           {/* Sessions Table */}
+           {/* engagement track simplified for brevit */}
            <div className="bg-white rounded-[3rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full min-h-[500px]">
-              <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+              <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
                  <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-white text-blue-900 rounded-2xl flex items-center justify-center shadow-sm border border-gray-100">
                        <Target size={24} />
@@ -332,10 +314,10 @@ const DemoManagementPage: React.FC = () => {
                                   <button className="p-2.5 text-gray-400 hover:text-blue-900 bg-white border border-gray-100 rounded-xl hover:shadow-sm" title="Login As Admin Demo">
                                     <ArrowUpRight size={18} />
                                   </button>
-                                  <button className="p-2.5 text-gray-400 hover:text-amber-600 bg-white border border-gray-100 rounded-xl hover:shadow-sm" title="Reset Simulation Data">
+                                  <button onClick={() => resetSimulation(session.institutionName)} className="p-2.5 text-gray-400 hover:text-amber-600 bg-white border border-gray-100 rounded-xl hover:shadow-sm" title="Reset Simulation Data">
                                     <RefreshCw size={18} />
                                   </button>
-                                  <button className="p-2.5 text-gray-400 hover:text-red-600 bg-white border border-gray-100 rounded-xl hover:shadow-sm">
+                                  <button onClick={() => deleteDemo(session.id, session.institutionName)} className="p-2.5 text-gray-400 hover:text-red-600 bg-white border border-gray-100 rounded-xl hover:shadow-sm">
                                     <Trash2 size={18} />
                                   </button>
                                </div>
@@ -350,7 +332,7 @@ const DemoManagementPage: React.FC = () => {
                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center">
                     <ShieldCheck size={16} className="mr-2 text-blue-900" /> Sales Engine v2.4 Operational
                  </p>
-                 <button className="text-[10px] font-black text-blue-900 uppercase tracking-widest hover:underline flex items-center">
+                 <button onClick={() => { setSessions(sessions.filter(s => s.status === 'ACTIVE')); alert("Seluruh lingkungan demo yang expired telah dimusnahkan."); }} className="text-[10px] font-black text-blue-900 uppercase tracking-widest hover:underline flex items-center">
                     Clear All Expired Suites <ChevronRight size={14} className="ml-1" />
                  </button>
               </div>

@@ -34,7 +34,8 @@ import {
   Search,
   Clock,
   History,
-  FileSearch
+  FileSearch,
+  CheckCircle2
 } from 'lucide-react';
 
 const SidebarItem: React.FC<{ to: string, icon: React.ReactNode, label: string, active: boolean, isOpen: boolean }> = ({ to, icon, label, active, isOpen }) => (
@@ -67,6 +68,7 @@ const Layout: React.FC = () => {
   const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
   const isAdmin = user?.role === UserRole.ADMIN_INSTANSI;
   const isOperator = user?.role === UserRole.OPERATOR;
+  const isPejabat = user?.role === UserRole.PEJABAT_PENYETUJU;
   const isPegawai = user?.role === UserRole.PEGAWAI;
 
   const renderSuperAdminMenu = () => [
@@ -97,6 +99,12 @@ const Layout: React.FC = () => {
     { to: '/admin/config', icon: <Settings size={18} />, label: 'Pengaturan' },
   ];
 
+  const renderPejabatMenu = () => [
+    { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+    { to: '/sppd', icon: <ClipboardList size={18} />, label: 'Persetujuan' },
+    { to: '/riwayat-persetujuan', icon: <History size={18} />, label: 'Riwayat' },
+  ];
+
   const renderOperatorMenu = () => [
     { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { to: '/sppd', icon: <FileText size={18} />, label: 'Manajemen SPPD' },
@@ -104,17 +112,19 @@ const Layout: React.FC = () => {
     { to: '/arsip-digital', icon: <Archive size={18} />, label: 'Arsip Digital' },
   ];
 
+  // Updated menu label based on user request for PEGAWAI
   const renderPegawaiMenu = () => [
     { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { to: '/sppd/baru', icon: <PlusCircle size={18} />, label: 'Ajukan SPPD' },
     { to: '/sppd', icon: <FileText size={18} />, label: 'SPPD Saya' },
-    { to: '/arsip-digital', icon: <Archive size={18} />, label: 'Arsip Saya' },
+    { to: '/profile', icon: <UserIcon size={18} />, label: 'Profil Saya' },
   ];
 
   const getMenu = () => {
     if (isSuperAdmin) return renderSuperAdminMenu();
     if (isAdmin) return renderAdminInstansiMenu();
     if (isOperator) return renderOperatorMenu();
+    if (isPejabat) return renderPejabatMenu();
     if (isPegawai) return renderPegawaiMenu();
     return [
         { to: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
@@ -155,13 +165,16 @@ const Layout: React.FC = () => {
         </nav>
 
         <div className="p-4 border-t border-blue-800 space-y-1">
-          <SidebarItem to="/profile" icon={<UserIcon size={18} />} label="Profil Saya" active={isActive('/profile')} isOpen={isSidebarOpen} />
+          {/* For non-pegawai, Profile is still at the bottom, for Pegawai it's in the list above per request */}
+          {!isPegawai && (
+            <SidebarItem to="/profile" icon={<UserIcon size={18} />} label="Profil Saya" active={isActive('/profile')} isOpen={isSidebarOpen} />
+          )}
           <button 
             onClick={() => setShowLogoutModal(true)} 
             className="flex items-center space-x-3 px-4 py-3 w-full text-red-300 hover:text-white hover:bg-red-600/30 rounded-xl transition-all font-bold group"
           >
             <LogOut size={18} className="group-hover:rotate-12 transition-transform" />
-            {isSidebarOpen && <span className="text-[11px] uppercase tracking-wider">Keluar Sistem</span>}
+            {isSidebarOpen && <span className="text-[11px] uppercase tracking-wider">Logout</span>}
           </button>
         </div>
       </aside>
@@ -202,7 +215,7 @@ const Layout: React.FC = () => {
         </div>
       </main>
 
-      {/* CUSTOM LOGOUT VERIFICATION MODAL */}
+      {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-blue-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowLogoutModal(false)}></div>
